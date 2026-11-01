@@ -1,6 +1,17 @@
 # Job Portal & Application Tracking System
 
 A server-rendered Django job portal and Applicant Tracking System (ATS) for job seekers, recruiters, and administrators.
+# Job Portal
+
+A Django-based Job Portal connecting job seekers and recruiters.
+
+### 🌐 Live Demo
+
+**[Visit Job Portal](https://job-portal-jq5s.onrender.com)**
+
+### 💻 Source Code
+
+[GitHub Repository](https://github.com/sachinpandit29v/job-portal)
 
 ## Table of contents
 
