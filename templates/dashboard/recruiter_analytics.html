@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Recruitment Analytics | Recruiter Portal{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-graph-up text-primary me-2"></i>Recruitment Analytics & Funnels
+            </h2>
+            <p class="text-muted mb-0">Visual performance charts, conversion rates, and candidate pipeline volume.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'jobs:manage_jobs' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-briefcase me-1"></i> Manage Vacancies
+            </a>
+            <a href="{% url 'applications:recruiter_applicants' %}" class="btn btn-primary">
+                <i class="bi bi-people me-1"></i> Applicant Pipeline
+            </a>
+        </div>
+    </div>
+
+    <!-- Analytics charts -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 analytics-chart-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-pie-chart-fill text-primary me-2"></i>Application Status
+                    </h5>
+                    <span class="badge bg-light text-muted border">{{ total_applications }} total</span>
+                </div>
+                <div class="analytics-chart-container">
+                    <canvas id="applicationStatusChart" aria-label="Application status distribution"></canvas>
+                    <div id="applicationStatusEmpty" class="text-center text-muted py-5 d-none">
+                        <i class="bi bi-pie-chart fs-1 d-block mb-2"></i>
+                        No applications recorded yet.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 analytics-chart-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-bar-chart-fill text-primary me-2"></i>Applications by Job
+                    </h5>
+                    <span class="badge bg-light text-muted border">{{ jobs_breakdown|length }} jobs</span>
+                </div>
+                <div class="analytics-chart-container analytics-bar-chart-container">
+                    <canvas id="applicationsByJobChart" aria-label="Applications received by job"></canvas>
+                    <div id="applicationsByJobEmpty" class="text-center text-muted py-5 d-none">
+                        <i class="bi bi-bar-chart fs-1 d-block mb-2"></i>
+                        No job postings yet.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stage breakdown breakdown metrics -->
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-funnel text-primary me-2"></i>Candidate Conversion Metrics</h5>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Pipeline Stage</th>
+                        <th>Applicant Volume</th>
+                        <th>Recruiter Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sc in status_counts %}
+                    <tr>
+                        <td class="ps-3 fw-semibold text-dark">{{ sc.current_status }}</td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary px-3 py-1.5 fs-6">{{ sc.count }}</span>
+                        </td>
+                        <td>
+                            <a href="{% url 'applications:recruiter_applicants' %}?status={{ sc.current_status }}" class="btn btn-sm btn-outline-primary">
+                                View Candidates in Stage
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{{ status_counts|json_script:"application-status-data" }}
+{{ jobs_breakdown|json_script:"applications-by-job-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const statusData = JSON.parse(document.getElementById('application-status-data').textContent);
+    const jobsData = JSON.parse(document.getElementById('applications-by-job-data').textContent);
+    const palette = ['#284B63', '#3C6E71', '#d97706', '#0284c7', '#64748b', '#198754', '#dc3545', '#94a3b8'];
+    const totalApplications = statusData.reduce((total, status) => total + status.count, 0);
+
+    if (totalApplications > 0) {
+        new Chart(document.getElementById('applicationStatusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: statusData.map(status => status.label),
+                datasets: [{
+                    data: statusData.map(status => status.count),
+                    backgroundColor: palette,
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14 } },
+                    tooltip: {
+                        callbacks: {
+                            label: context => {
+                                const count = context.raw;
+                                const percentage = ((count / totalApplications) * 100).toFixed(1);
+                                return ` ${context.label}: ${count} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        document.getElementById('applicationStatusChart').classList.add('d-none');
+        document.getElementById('applicationStatusEmpty').classList.remove('d-none');
+    }
+
+    if (jobsData.length > 0) {
+        new Chart(document.getElementById('applicationsByJobChart'), {
+            type: 'bar',
+            data: {
+                labels: jobsData.map(job => job.title),
+                datasets: [{
+                    label: 'Applications',
+                    data: jobsData.map(job => job.app_count),
+                    backgroundColor: '#3C6E71',
+                    borderRadius: 5,
+                    barThickness: 24
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { beginAtZero: true, ticks: { precision: 0 }, title: { display: true, text: 'Applications' } },
+                    y: { ticks: { autoSkip: false } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: context => ` Applications: ${context.raw}` } }
+                }
+            }
+        });
+    } else {
+        document.getElementById('applicationsByJobChart').classList.add('d-none');
+        document.getElementById('applicationsByJobEmpty').classList.remove('d-none');
+    }
+</script>
+{% endblock %}

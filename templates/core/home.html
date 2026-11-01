@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% load job_formatting %}
+
+{% block title %}Job Portal & Application Tracking System - Find Your Next Role{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="home-hero py-5 text-center text-white">
+  <div class="container py-4">
+    <div class="badge bg-light text-dark mb-3 px-3 py-2 fw-semibold">
+      <i class="bi bi-sparkles text-info me-1"></i> Transparent ATS &middot; Direct Recruiter Feedback
+    </div>
+    <h1 class="display-5 fw-bold mb-3">Discover Opportunities &amp; Track Every Stage</h1>
+    <p class="lead text-white-50 max-w-2xl mx-auto mb-4" style="max-width: 650px; margin: 0 auto;">
+      A comprehensive portal where candidates search vacancies, submit tailored resumes, and monitor application progress in real time.
+    </p>
+
+    <!-- Search Bar Form -->
+    <div class="home-search card p-2 shadow-lg border-0 mx-auto">
+      <form action="{% url 'jobs:job_list' %}" method="GET" class="row g-2 align-items-center">
+        <div class="col-md-5">
+          <div class="input-group">
+            <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" name="q" class="form-control border-0 shadow-none" placeholder="Job title, keywords, or company...">
+          </div>
+        </div>
+        <div class="col-md-4 home-search-location">
+          <div class="input-group">
+            <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-geo-alt"></i></span>
+            <input type="text" name="location" class="form-control border-0 shadow-none" placeholder="City, State, or 'Remote'">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-primary w-100 fw-bold py-2" style="background-color: #284B63;">
+            Search Jobs <i class="bi bi-arrow-right"></i>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Quick stats strip -->
+    <div class="row g-3 justify-content-center mt-4 text-center">
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-white bg-opacity-10 rounded">
+          <h3 class="fw-bold mb-0 text-white">{{ stats.total_jobs }}+</h3>
+          <small class="text-white-50">Active Vacancies</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-white bg-opacity-10 rounded">
+          <h3 class="fw-bold mb-0 text-white">{{ stats.total_companies }}+</h3>
+          <small class="text-white-50">Partner Companies</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-white bg-opacity-10 rounded">
+          <h3 class="fw-bold mb-0 text-white">{{ stats.total_seekers }}+</h3>
+          <small class="text-white-50">Registered Talent</small>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="p-3 bg-white bg-opacity-10 rounded">
+          <h3 class="fw-bold mb-0 text-white">{{ stats.total_applications }}+</h3>
+          <small class="text-white-50">Applications Tracked</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Jobs Section -->
+<section class="container py-5">
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold text-dark mb-0">Featured Job Openings</h3>
+      <p class="text-muted small mb-0">Hand-picked engineering opportunities with verified salary ranges</p>
+    </div>
+    <a href="{% url 'jobs:job_list' %}" class="btn btn-outline-primary btn-sm fw-bold">
+      View All Jobs <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+
+  <div class="row g-4">
+    {% for job in featured_jobs %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 p-3 hover-shadow border">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="d-flex align-items-center gap-2">
+              <div class="bg-primary-custom rounded d-flex align-items-center justify-content-center fw-bold fs-6" style="width: 40px; height: 40px;">
+                {{ job.company.logo_initials|default:"NT" }}
+              </div>
+              <div>
+                <h6 class="mb-0 fw-bold">{{ job.company.name }}</h6>
+                <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ job.location }}</small>
+              </div>
+            </div>
+            {% if job.is_featured %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle">Featured</span>
+            {% endif %}
+          </div>
+
+          <h5 class="fw-bold mb-1">
+            <a href="{% url 'jobs:job_detail' job.id %}" class="text-decoration-none text-dark">{{ job.title }}</a>
+          </h5>
+
+          <div class="text-muted small mb-2">
+            <span>{{ job.employment_type }}</span> &middot;
+            <span>{{ job.experience_level }}</span> &middot;
+            <span>{{ job.category.name }}</span>
+          </div>
+
+          <p class="text-muted small mb-3 flex-grow-1">
+            {{ job.description|truncatewords:20 }}
+          </p>
+
+          <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+            <span class="fw-bold text-dark small">
+              {% if job.min_salary and job.max_salary %}
+                {{ job.min_salary|lpa }} - {{ job.max_salary|lpa }}
+              {% else %}
+                Competitive
+              {% endif %}
+            </span>
+            <a href="{% url 'jobs:job_detail' job.id %}" class="btn btn-sm btn-primary">
+              Details &amp; Apply
+            </a>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12 text-center py-4 text-muted">No featured jobs at this time.</div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Latest Jobs Section -->
+<section class="container pb-5">
+  <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
+    <div>
+      <h3 class="fw-bold text-dark mb-0">Latest Opportunities</h3>
+      <p class="text-muted small mb-0">Explore the newest active roles added to the portal</p>
+    </div>
+    <a href="{% url 'jobs:job_list' %}?sort=newest" class="btn btn-outline-secondary btn-sm fw-bold">
+      Explore All Roles <i class="bi bi-arrow-right"></i>
+    </a>
+  </div>
+  <div class="row g-3">
+    {% for job in recent_jobs %}
+      <div class="col-md-6 col-lg-4">
+        <a href="{% url 'jobs:job_detail' job.id %}" class="card latest-job-card border-0 shadow-sm rounded-4 p-3 h-100 text-decoration-none">
+          <div class="d-flex align-items-start justify-content-between gap-3">
+            <div class="min-w-0">
+              <h6 class="fw-bold text-dark mb-1 text-truncate">{{ job.title }}</h6>
+              <p class="text-muted small mb-2"><i class="bi bi-building me-1"></i>{{ job.company.name }}</p>
+            </div>
+            <span class="badge bg-primary-subtle text-primary">{{ job.employment_type }}</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+            <span class="small text-muted"><i class="bi bi-geo-alt me-1"></i>{{ job.location }}</span>
+            <span class="small fw-semibold text-primary">View role <i class="bi bi-arrow-up-right"></i></span>
+          </div>
+        </a>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="home-empty-state text-center rounded-4 p-4">
+          <i class="bi bi-briefcase text-muted fs-2 d-block mb-2"></i>
+          <p class="text-muted mb-0">New opportunities will appear here soon.</p>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- ATS Visual Workflow Section -->
+<section class="bg-white py-5 border-top border-bottom">
+  <div class="container">
+    <div class="text-center max-w-xl mx-auto mb-5" style="max-width: 600px; margin: 0 auto;">
+      <span class="text-secondary-custom fw-bold text-uppercase small">Application Lifecycle</span>
+      <h3 class="fw-bold text-dark mt-1">How the Application Tracking System Works</h3>
+      <p class="text-muted small">Complete transparency at every step between candidate and hiring team</p>
+    </div>
+
+    <div class="row g-4 text-center">
+      <div class="col-md-3">
+        <div class="p-3 border rounded bg-light h-100">
+          <div class="badge bg-primary-custom rounded-circle p-3 mb-3 fs-5">01</div>
+          <h6 class="fw-bold">Job Application</h6>
+          <p class="small text-muted mb-0">Apply with your uploaded resume and cover letter. Duplicate prevention is enforced.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 border rounded bg-light h-100">
+          <div class="badge bg-secondary-custom rounded-circle p-3 mb-3 fs-5">02</div>
+          <h6 class="fw-bold">Profile Screening</h6>
+          <p class="small text-muted mb-0">Hiring managers inspect your credentials and progress status to "Under Review".</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 border rounded bg-light h-100">
+          <div class="badge bg-primary-custom rounded-circle p-3 mb-3 fs-5">03</div>
+          <h6 class="fw-bold">Interview Rounds</h6>
+          <p class="small text-muted mb-0">Technical or HR rounds are scheduled with direct video links and recruiter notes.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="p-3 border rounded bg-light h-100">
+          <div class="badge bg-success rounded-circle p-3 mb-3 fs-5">04</div>
+          <h6 class="fw-bold">Offer &amp; Selection</h6>
+          <p class="small text-muted mb-0">Receive instant in-app alerts and track your complete status history log.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Browse by Category -->
+<section class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold text-dark mb-0">Browse by Specialization</h3>
+      <p class="text-muted small mb-0">Find roles that match your skills and interests</p>
+    </div>
+  </div>
+  <div class="row g-3">
+    {% for cat in categories %}
+      <div class="col-6 col-md-3">
+        <a href="{% url 'jobs:job_list' %}?category={{ cat.slug }}" class="card p-3 text-decoration-none text-dark h-100 hover-shadow border">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-code-square text-primary fs-4"></i>
+            <h6 class="mb-0 fw-bold">{{ cat.name }}</h6>
+          </div>
+          <small class="text-muted">{{ cat.active_jobs_count }} open roles</small>
+        </a>
+      </div>
+    {% endfor %}
+    {% if not categories %}
+      <div class="col-12">
+        <p class="text-muted mb-0">Specializations will be listed here as roles are added.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

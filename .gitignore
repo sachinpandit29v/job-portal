@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.log
+
+# Virtual Environment
+.venv/
+venv/
+env/
+myvenv/
+
+# Django
+staticfiles/
+db.sqlite3
+*.sqlite3
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# User uploaded files
+media/
+
+# IDE
+.vscode/
+.idea/
+
+# Node
+node_modules/
+
+# Build
+build/
+dist/
+coverage/
+
+# System
+.DS_Store
+Thumbs.db

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications & Alerts | ATS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header banner -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-dark mb-1">
+                        <i class="bi bi-bell text-primary me-2"></i>Notifications & Stage Alerts
+                    </h2>
+                    <p class="text-muted mb-0">System updates, application status changes, and interview reminders.</p>
+                </div>
+                {% if notifications %}
+                <a href="{% url 'notifications:mark_all_read' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-check2-all me-1"></i> Mark All as Read
+                </a>
+                {% endif %}
+            </div>
+
+            <!-- Notifications list card -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="list-group list-group-flush">
+                    {% for notif in notifications %}
+                    <a href="{% url 'notifications:mark_read' notif.id %}" 
+                       class="list-group-item list-group-item-action p-4 border-bottom {% if not notif.is_read %}bg-primary-subtle bg-opacity-25{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="rounded-circle p-2.5 d-flex align-items-center justify-content-center 
+                                    {% if not notif.is_read %}bg-primary text-white{% else %}bg-light text-muted border{% endif %}" 
+                                    style="width: 44px; height: 44px;">
+                                    <i class="bi {% if 'Interview' in notif.title %}bi-camera-video{% elif 'Submitted' in notif.title %}bi-send{% elif 'Stage' in notif.title %}bi-diagram-3{% else %}bi-bell{% endif %} fs-5"></i>
+                                </div>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <h6 class="fw-bold text-dark mb-0">{{ notif.title }}</h6>
+                                        {% if not notif.is_read %}
+                                            <span class="badge bg-primary text-white extra-small" style="font-size: 10px;">New</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-secondary small mb-1">{{ notif.message }}</p>
+                                    <span class="text-muted extra-small" style="font-size: 11px;">
+                                        <i class="bi bi-clock me-1"></i>{{ notif.created_at|timesince }} ago
+                                    </span>
+                                </div>
+                            </div>
+
+                            <span class="text-muted small">
+                                <i class="bi bi-chevron-right"></i>
+                            </span>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-bell-slash text-muted fs-1 mb-2 d-block"></i>
+                        <h5 class="fw-bold text-dark">No notifications</h5>
+                        <p class="text-muted small mb-0">You're all caught up! New updates on your applications will appear here.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

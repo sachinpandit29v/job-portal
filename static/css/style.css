@@ -1,0 +1,431 @@
+/* Custom styles for Job Portal & Application Tracking System */
+:root {
+  --bs-primary: #284B63;
+  --bs-secondary: #3C6E71;
+  --color-primary: #284B63;
+  --color-secondary: #3C6E71;
+  --color-bg: #F4F4F4;
+  --color-text: #353535;
+  --color-success: #198754;
+  --color-danger: #DC3545;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.navbar .nav-link,
+.navbar .btn,
+.navbar .navbar-brand,
+.navbar .dropdown-menu {
+  transition: color 0.2s ease, background-color 0.2s ease,
+    border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.candidate-review-stage-panel {
+  position: static;
+}
+
+.navbar .nav-link:hover,
+.navbar .nav-link:focus-visible,
+.navbar .btn:hover,
+.navbar .btn:focus-visible {
+  transform: translateY(-1px);
+}
+
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+.portal-toast-container {
+  position: fixed;
+  top: 5.25rem;
+  right: 1.25rem;
+  z-index: 1090;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: min(25rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.portal-toast {
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+  padding: 0.85rem 1rem 1rem;
+  border: 0;
+  border-left: 0.25rem solid currentColor;
+  border-radius: 0.65rem;
+  color: #284b63;
+  background-color: #fff;
+  pointer-events: auto;
+  box-shadow: 0 0.6rem 1.5rem rgba(15, 23, 42, 0.16) !important;
+}
+
+.portal-toast-icon {
+  font-size: 1.1rem;
+}
+
+.portal-toast-title {
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+.portal-toast .btn-close {
+  margin-left: auto;
+  opacity: 0.65;
+}
+
+.portal-toast .btn-close:hover {
+  opacity: 1;
+}
+
+.portal-toast-message {
+  padding-right: 1.5rem;
+  color: #334155;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.portal-toast-progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 0.2rem;
+  background-color: currentColor;
+  opacity: 0.5;
+  transform-origin: left;
+  animation: portal-toast-countdown 5s linear forwards;
+}
+
+@keyframes portal-toast-countdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+.portal-toast-success {
+  color: #146c43;
+  background-color: #d1e7dd;
+}
+
+.portal-toast-error {
+  color: #b02a37;
+  background-color: #f8d7da;
+}
+
+.portal-toast-warning {
+  color: #997404;
+  background-color: #fff3cd;
+}
+
+.portal-toast-info {
+  color: #055160;
+  background-color: #cff4fc;
+}
+
+@media (max-width: 575.98px) {
+  .portal-toast-container {
+    top: 4.75rem;
+    right: 1rem;
+    width: calc(100vw - 2rem);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .navbar > .container {
+    align-items: center;
+  }
+
+  .navbar-brand {
+    min-width: 0;
+    font-size: 1rem;
+  }
+
+  .navbar-brand span {
+    white-space: nowrap;
+  }
+
+  .navbar-collapse {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.65rem 0 0.2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .navbar-collapse .navbar-nav {
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.75rem !important;
+  }
+
+  .navbar-collapse .nav-link {
+    width: fit-content;
+    min-width: 10.5rem;
+    padding: 0.45rem 0.75rem;
+    border-radius: 0.4rem;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .navbar-collapse .nav-link:hover,
+  .navbar-collapse .nav-link:focus {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .navbar-actions {
+    align-items: center !important;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+    padding-top: 0.65rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .navbar-actions > .btn,
+  .navbar-actions > .dropdown {
+    flex: 0 0 auto;
+  }
+
+  .navbar-actions > .btn {
+    min-height: 2.2rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+  }
+
+  .navbar-actions > .dropdown:last-child {
+    flex: 0 0 auto;
+  }
+
+  .navbar-actions > .dropdown:last-child > .btn {
+    width: auto;
+    min-height: 2.2rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+  }
+
+  .navbar-actions > .dropdown:first-child {
+    flex: 0 0 auto;
+  }
+
+  .navbar-actions > .dropdown:first-child > a {
+    min-height: 2.2rem;
+    padding: 0.35rem 0.55rem !important;
+  }
+
+  .navbar-actions .dropdown-menu {
+    right: 0;
+    left: auto;
+    max-width: calc(100vw - 2rem);
+  }
+
+  .navbar-actions .dropdown-menu[style*="width: 320px"] {
+    width: min(320px, calc(100vw - 2rem)) !important;
+  }
+}
+
+main {
+  flex: 1;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: #1f3b4f;
+  border-color: #1f3b4f;
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  border-color: var(--color-secondary);
+}
+
+.btn-secondary:hover, .btn-secondary:focus {
+  background-color: #2e5557;
+  border-color: #2e5557;
+}
+
+.text-primary-custom {
+  color: var(--color-primary) !important;
+}
+
+.text-secondary-custom {
+  color: var(--color-secondary) !important;
+}
+
+.bg-primary-custom {
+  background-color: var(--color-primary) !important;
+  color: #fff !important;
+}
+
+.bg-secondary-custom {
+  background-color: var(--color-secondary) !important;
+  color: #fff !important;
+}
+
+.home-hero {
+  background: linear-gradient(135deg, #284B63 0%, #3C6E71 100%);
+}
+
+.home-search {
+  max-width: 800px;
+}
+
+.latest-job-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.latest-job-card:hover,
+.latest-job-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 0.6rem 1.25rem rgba(40, 75, 99, 0.12) !important;
+}
+
+.home-empty-state {
+  border: 1px dashed #cbd5e1;
+  background-color: #f8fafc;
+}
+
+.card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.dashboard-stat-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dashboard-stat-card:hover,
+.dashboard-stat-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(40, 75, 99, 0.12) !important;
+}
+
+.analytics-chart-card {
+  min-height: 430px;
+}
+
+.analytics-chart-container {
+  min-height: 330px;
+  position: relative;
+}
+
+.analytics-bar-chart-container {
+  min-height: 330px;
+}
+
+@media (max-width: 575.98px) {
+  .analytics-chart-card {
+    min-height: 380px;
+  }
+
+  .analytics-chart-container {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .home-search-location {
+    border-left: 0 !important;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 0.5rem;
+  }
+}
+
+.category-card {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(40, 75, 99, 0.12) !important;
+}
+
+.category-section-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.category-description {
+  min-height: 2.75rem;
+}
+
+.category-create-card {
+  background: linear-gradient(135deg, rgba(40, 75, 99, 0.04), rgba(60, 110, 113, 0.08));
+}
+
+/* ATS Status Badges */
+.badge-applied { background-color: #64748b; color: #fff; }
+.badge-review { background-color: #d97706; color: #fff; }
+.badge-shortlisted { background-color: #3C6E71; color: #fff; }
+.badge-interview { background-color: #0284c7; color: #fff; }
+.badge-selected { background-color: #198754; color: #fff; }
+.badge-rejected { background-color: #dc3545; color: #fff; }
+.badge-withdrawn { background-color: #94a3b8; color: #fff; }
+
+/* Timeline connector styling */
+.tracking-step {
+  position: relative;
+  text-align: center;
+  flex: 1;
+}
+
+.step-circle {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  background-color: #e2e8f0;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.step-circle.active {
+  background-color: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(40, 75, 99, 0.2);
+}
+
+.step-circle.completed {
+  background-color: var(--color-success);
+  color: #fff;
+}

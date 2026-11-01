@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}My Job Applications | Candidate Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-clock-history text-primary me-2"></i>My Job Applications
+            </h2>
+            <p class="text-muted mb-0">Track your real-time recruitment progress, interview schedules, and stage updates.</p>
+        </div>
+        <a href="{% url 'jobs:job_list' %}" class="btn btn-primary px-3 py-2 fw-semibold">
+            <i class="bi bi-search me-1"></i> Browse More Vacancies
+        </a>
+    </div>
+
+    <!-- Status filter navigation -->
+    <div class="card border-0 shadow-sm rounded-4 p-2 mb-4 overflow-auto">
+        <div class="d-flex gap-2 flex-nowrap py-1">
+            <a href="?status=all" class="btn btn-sm {% if selected_status == 'all' %}btn-primary{% else %}btn-light text-muted{% endif %} rounded-pill px-3">
+                All Applications
+            </a>
+            <a href="?status=Applied" class="btn btn-sm {% if selected_status == 'Applied' %}btn-primary{% else %}btn-light text-muted{% endif %} rounded-pill px-3">
+                Applied
+            </a>
+            <a href="?status=Under Review" class="btn btn-sm {% if selected_status == 'Under Review' %}btn-primary{% else %}btn-light text-muted{% endif %} rounded-pill px-3">
+                Under Review
+            </a>
+            <a href="?status=Shortlisted" class="btn btn-sm {% if selected_status == 'Shortlisted' %}btn-primary{% else %}btn-light text-muted{% endif %} rounded-pill px-3">
+                Shortlisted
+            </a>
+            <a href="?status=Interview Scheduled" class="btn btn-sm {% if selected_status == 'Interview Scheduled' %}btn-primary{% else %}btn-light text-muted{% endif %} rounded-pill px-3">
+                Interviews
+            </a>
+            <a href="?status=Selected" class="btn btn-sm {% if selected_status == 'Selected' %}btn-primary{% else %}btn-light text-muted{% endif %} rounded-pill px-3">
+                Selected
+            </a>
+            <a href="?status=Rejected" class="btn btn-sm {% if selected_status == 'Rejected' %}btn-primary{% else %}btn-light text-muted{% endif %} rounded-pill px-3">
+                Rejected
+            </a>
+            <a href="?status=Withdrawn" class="btn btn-sm {% if selected_status == 'Withdrawn' %}btn-primary{% else %}btn-light text-muted{% endif %} rounded-pill px-3">
+                Withdrawn
+            </a>
+        </div>
+    </div>
+
+    <!-- Applications Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Job Title & Company</th>
+                        <th>Applied Date</th>
+                        <th>Status</th>
+                        <th>Recruiter Notes</th>
+                        <th>Last Stage Update</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark fs-6">
+                                <a href="{% url 'jobs:job_detail' app.job.id %}" class="text-decoration-none text-dark hover-primary">{{ app.job.title }}</a>
+                            </div>
+                            <span class="text-muted small">
+                                <strong>{{ app.job.company.name }}</strong> • {{ app.job.location }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="small text-muted">{{ app.created_at|date:"M d, Y" }}</span>
+                        </td>
+                        <td>
+                            {% if app.current_status == 'Applied' %}
+                                <span class="badge bg-primary-subtle text-primary px-3 py-1.5 fs-7">Applied</span>
+                            {% elif app.current_status == 'Under Review' %}
+                                <span class="badge bg-info-subtle text-info-emphasis px-3 py-1.5 fs-7">Under Review</span>
+                            {% elif app.current_status == 'Shortlisted' %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis px-3 py-1.5 fs-7">Shortlisted</span>
+                            {% elif app.current_status == 'Interview Scheduled' or app.current_status == 'Interview Completed' %}
+                                <span class="badge bg-primary px-3 py-1.5 text-white fs-7"><i class="bi bi-calendar-event me-1"></i>{{ app.current_status }}</span>
+                            {% elif app.current_status == 'Selected' %}
+                                <span class="badge bg-success text-white px-3 py-1.5 fs-7"><i class="bi bi-trophy-fill me-1"></i>Selected / Offer</span>
+                            {% elif app.current_status == 'Rejected' %}
+                                <span class="badge bg-danger-subtle text-danger px-3 py-1.5 fs-7">Rejected</span>
+                            {% elif app.current_status == 'Withdrawn' %}
+                                <span class="badge bg-secondary-subtle text-secondary px-3 py-1.5 fs-7">Withdrawn</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if app.interview_date %}
+                                <div class="small text-primary fw-medium">
+                                    <i class="bi bi-camera-video me-1"></i>{{ app.interview_date|date:"M d, Y - h:i A" }}
+                                </div>
+                            {% else %}
+                                <span class="small text-muted">
+                                    {{ app.status_history.last.remarks|default:"In progress"|truncatewords:6 }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="small text-muted">{{ app.updated_at|timesince }} ago</span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'applications:tracking' app.id %}" class="btn btn-sm btn-outline-primary fw-medium px-3">
+                                    <i class="bi bi-speedometer2 me-1"></i> Track Progress
+                                </a>
+                                {% if app.current_status != 'Selected' and app.current_status != 'Rejected' and app.current_status != 'Withdrawn' %}
+                                <a href="{% url 'applications:withdraw' app.id %}" class="btn btn-sm btn-light text-danger border" onclick="return confirm('Are you sure you want to withdraw this application? This action cannot be undone.');" title="Withdraw Application">
+                                    <i class="bi bi-x-circle"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="p-4">
+                                <i class="bi bi-folder-x text-muted fs-1 mb-3 d-block"></i>
+                                <h5 class="fw-bold text-dark">No applications found</h5>
+                                <p class="text-muted mb-3">You haven't submitted any applications under this category yet.</p>
+                                <a href="{% url 'jobs:job_list' %}" class="btn btn-primary px-4">
+                                    Explore Job Vacancies
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

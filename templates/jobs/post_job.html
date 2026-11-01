@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit Vacancy: {{ job.title }}{% else %}Publish New Vacancy{% endif %} | Recruiter Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard:recruiter' %}" class="text-decoration-none">Recruiter Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:manage_jobs' %}" class="text-decoration-none">Manage Vacancies</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{% if is_edit %}Edit Vacancy{% else %}Post Job{% endif %}</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+                <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                    <div>
+                        <h3 class="fw-bold text-dark mb-1">
+                            <i class="bi bi-briefcase text-primary me-2"></i>
+                            {% if is_edit %}Edit Vacancy: {{ job.title }}{% else %}Post a New Job Vacancy{% endif %}
+                        </h3>
+                        <p class="text-muted mb-0">Publish professional listings to discover and track qualified candidates.</p>
+                    </div>
+                    {% if is_edit %}
+                        <span class="badge bg-primary-subtle text-primary px-3 py-2 fs-6">Editing Active Listing</span>
+                    {% endif %}
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger mb-4">
+                            {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Section 1: Basic Information -->
+                    <h5 class="fw-bold text-dark mb-3">1. Role Overview</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Job Title <span class="text-danger">*</span></label>
+                            {{ form.title }}
+                            {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Industry Category <span class="text-danger">*</span></label>
+                            {{ form.category }}
+                            {% if form.category.errors %}<div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Location (City, State or Remote) <span class="text-danger">*</span></label>
+                            {{ form.location }}
+                            {% if form.location.errors %}<div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Employment Type <span class="text-danger">*</span></label>
+                            {{ form.employment_type }}
+                            {% if form.employment_type.errors %}<div class="text-danger small mt-1">{{ form.employment_type.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Experience Level <span class="text-danger">*</span></label>
+                            {{ form.experience_level }}
+                            {% if form.experience_level.errors %}<div class="text-danger small mt-1">{{ form.experience_level.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Compensation & Schedule -->
+                    <h5 class="fw-bold text-dark mb-3 pt-3 border-top">2. Compensation & Timeline</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Minimum Package (₹/year) <span class="text-danger">*</span></label>
+                            {{ form.min_salary }}
+                            {% if form.min_salary.errors %}<div class="text-danger small mt-1">{{ form.min_salary.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Maximum Package (₹/year) <span class="text-danger">*</span></label>
+                            {{ form.max_salary }}
+                            {% if form.max_salary.errors %}<div class="text-danger small mt-1">{{ form.max_salary.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Application Deadline</label>
+                            {{ form.deadline }}
+                            {% if form.deadline.errors %}<div class="text-danger small mt-1">{{ form.deadline.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch p-3 bg-light rounded-3">
+                                {{ form.is_featured }}
+                                <label class="form-check-label fw-semibold ms-2" for="{{ form.is_featured.id_for_label }}">
+                                    Mark as Featured Vacancy (Highlight on portal homepage)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Detailed Job Description -->
+                    <h5 class="fw-bold text-dark mb-3 pt-3 border-top">3. Detailed Specifications</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Job Description & Summary <span class="text-danger">*</span></label>
+                            {{ form.description }}
+                            <div class="form-text">Describe the project scope, mission, and day-to-day team context.</div>
+                            {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Key Responsibilities <span class="text-danger">*</span></label>
+                            {{ form.responsibilities }}
+                            <div class="form-text">Enter core tasks, design systems, and delivery deliverables.</div>
+                            {% if form.responsibilities.errors %}<div class="text-danger small mt-1">{{ form.responsibilities.errors.0 }}</div>{% endif %}
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Required Technical Skills & Qualifications <span class="text-danger">*</span></label>
+                            {{ form.requirements }}
+                            <div class="form-text">List essential programming languages, toolchains, frameworks, or degrees.</div>
+                            {% if form.requirements.errors %}<div class="text-danger small mt-1">{{ form.requirements.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{% url 'jobs:manage_jobs' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-5 py-2.5 fw-semibold shadow-sm">
+                            <i class="bi bi-cloud-arrow-up me-2"></i>
+                            {% if is_edit %}Save Changes{% else %}Publish Vacancy{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

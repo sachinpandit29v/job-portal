@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Job Vacancies | Recruiter Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-briefcase text-primary me-2"></i>My Job Vacancies
+            </h2>
+            <p class="text-muted mb-0">Monitor your company's active postings, review applicants, and control vacancy status.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'jobs:post_job' %}" class="btn btn-primary px-3 py-2 fw-semibold shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Post New Vacancy
+            </a>
+            <a href="{% url 'dashboard:recruiter_analytics' %}" class="btn btn-outline-secondary px-3 py-2">
+                <i class="bi bi-graph-up me-1"></i> Analytics
+            </a>
+        </div>
+    </div>
+
+    <!-- Vacancies List Card -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Job Details</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Applications</th>
+                        <th>Views</th>
+                        <th>Posted Date</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark fs-6">
+                                <a href="{% url 'jobs:job_detail' job.id %}" class="text-decoration-none text-dark hover-primary">{{ job.title }}</a>
+                                {% if job.is_featured %}
+                                    <span class="badge bg-warning text-dark ms-1"><i class="bi bi-star-fill"></i> Featured</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ job.location }} • {{ job.get_employment_type_display }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">{{ job.category.name }}</span>
+                        </td>
+                        <td>
+                            {% if job.status == 'active' %}
+                                <span class="badge bg-success-subtle text-success px-2.5 py-1">Active</span>
+                            {% elif job.status == 'closed' %}
+                                <span class="badge bg-secondary-subtle text-secondary px-2.5 py-1">Closed</span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger px-2.5 py-1">{{ job.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'applications:recruiter_applicants' %}?job_id={{ job.id }}" class="badge bg-primary-subtle text-primary p-2 text-decoration-none fs-6">
+                                <i class="bi bi-people-fill me-1"></i> {{ job.applicants_count }} Applicants
+                            </a>
+                        </td>
+                        <td>
+                            <span class="text-muted small"><i class="bi bi-eye me-1"></i>{{ job.views_count }}</span>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ job.created_at|date:"M d, Y" }}</span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Options
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'jobs:job_detail' job.id %}">
+                                            <i class="bi bi-box-arrow-up-right me-2 text-muted"></i>View Public Page
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'jobs:edit_job' job.id %}">
+                                            <i class="bi bi-pencil-square me-2 text-primary"></i>Edit Details
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'applications:recruiter_applicants' %}?job_id={{ job.id }}">
+                                            <i class="bi bi-people me-2 text-info"></i>Manage Applicants
+                                        </a>
+                                    </li>
+                                    {% if job.status == 'active' %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="{% url 'jobs:delete_job' job.id %}" onclick="return confirm('Are you sure you want to close this job vacancy?');">
+                                            <i class="bi bi-x-circle me-2"></i>Close Vacancy
+                                        </a>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="p-4">
+                                <i class="bi bi-briefcase text-muted fs-1 mb-3 d-block"></i>
+                                <h5 class="fw-bold text-dark">No job vacancies created yet</h5>
+                                <p class="text-muted mb-3">Publish your first job vacancy to start receiving verified candidate applications.</p>
+                                <a href="{% url 'jobs:post_job' %}" class="btn btn-primary px-4">
+                                    <i class="bi bi-plus-circle me-1"></i> Post Your First Vacancy
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

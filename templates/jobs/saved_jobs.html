@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load job_formatting %}
+
+{% block title %}My Saved Jobs | Candidate Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-bookmark-fill text-primary me-2"></i>My Saved Jobs
+            </h2>
+            <p class="text-muted mb-0">Saved listings you're interested in or preparing to apply for.</p>
+        </div>
+        <a href="{% url 'jobs:job_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-search me-1"></i> Browse More Jobs
+        </a>
+    </div>
+
+    {% if saved_items %}
+    <div class="row g-4">
+        {% for item in saved_items %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-4 d-flex flex-column justify-content-between hover-lift">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="rounded-3 bg-light p-2.5 border d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                            <i class="bi bi-building text-primary fs-4"></i>
+                        </div>
+                        <a href="{% url 'jobs:toggle_save' item.job.id %}" class="btn btn-sm btn-light text-danger border" title="Remove bookmark">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+
+                    <h5 class="fw-bold text-dark mb-1">
+                        <a href="{% url 'jobs:job_detail' item.job.id %}" class="text-decoration-none text-dark hover-primary">{{ item.job.title }}</a>
+                    </h5>
+                    <div class="text-muted small mb-3">
+                        <span class="text-dark fw-medium">{{ item.job.company.name }}</span> • {{ item.job.location }}
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-1 mb-3">
+                        <span class="badge bg-primary-subtle text-primary">{{ item.job.category.name }}</span>
+                        <span class="badge bg-secondary-subtle text-secondary">{{ item.job.get_employment_type_display }}</span>
+                        <span class="badge bg-light text-dark border">{{ item.job.get_experience_level_display }}</span>
+                    </div>
+
+                    <p class="text-secondary small mb-3">
+                        {{ item.job.description|truncatewords:20 }}
+                    </p>
+                </div>
+
+                <div class="pt-3 border-top d-flex justify-content-between align-items-center mt-2">
+                    <span class="fw-bold text-success">{{ item.job.max_salary|lpa }}</span>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'jobs:job_detail' item.job.id %}" class="btn btn-sm btn-outline-secondary">Details</a>
+                        <a href="{% url 'applications:apply' item.job.id %}" class="btn btn-sm btn-primary">Apply Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center">
+        <div class="py-4">
+            <i class="bi bi-bookmark-dash text-muted fs-1 mb-3 d-block"></i>
+            <h4 class="fw-bold text-dark">No saved jobs yet</h4>
+            <p class="text-muted mb-4">When browsing job postings, click the bookmark icon to save positions you want to review later.</p>
+            <a href="{% url 'jobs:job_list' %}" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-search me-1"></i> Browse Open Vacancies
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Dashboard | Job Portal & ATS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Header -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-primary text-white">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-white text-primary fw-bold mb-2">Job Seeker Portal</span>
+                <h2 class="fw-bold mb-1">Welcome back, {{ user.full_name }}! 👋</h2>
+                <p class="text-white-50 mb-0">Track your recruitment applications, upcoming technical interviews, and saved listings.</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{% url 'jobs:job_list' %}" class="btn btn-warning text-dark fw-bold px-4 py-2 shadow-sm">
+                    <i class="bi bi-search me-1"></i> Browse Jobs
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Strength Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+            <div>
+                <h5 class="fw-bold text-dark mb-1"><i class="bi bi-shield-check text-success me-2"></i>Profile Readiness Score</h5>
+                <p class="text-muted small mb-0">Complete profiles receive 3.5x more recruiter shortlists and interview invites.</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="fs-4 fw-bold text-primary">{{ strength_pct }}%</span>
+                <a href="{% url 'accounts:profile' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil-square me-1"></i> Update Profile
+                </a>
+                <a href="{% url 'accounts:resume' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-file-earmark-arrow-up me-1"></i> Manage Resume
+                </a>
+            </div>
+        </div>
+        <div class="progress" style="height: 10px; border-radius: 999px;">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ strength_pct }}%;" aria-valuenow="{{ strength_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
+                <span class="text-muted small fw-medium">Total Applied</span>
+                <h2 class="fw-bold text-primary mb-0 mt-1">{{ stats.total }}</h2>
+                <span class="extra-small text-muted" style="font-size: 11px;">Applications</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
+                <span class="text-muted small fw-medium">Under Review</span>
+                <h2 class="fw-bold text-info mb-0 mt-1">{{ stats.under_review }}</h2>
+                <span class="extra-small text-muted" style="font-size: 11px;">Screening</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
+                <span class="text-muted small fw-medium">Shortlisted</span>
+                <h2 class="fw-bold text-warning-emphasis mb-0 mt-1">{{ stats.shortlisted }}</h2>
+                <span class="extra-small text-muted" style="font-size: 11px;">Passed initial filter</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
+                <span class="text-muted small fw-medium">Interviews</span>
+                <h2 class="fw-bold text-primary mb-0 mt-1">{{ stats.interviews }}</h2>
+                <span class="extra-small text-muted" style="font-size: 11px;">Scheduled / Done</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
+                <span class="text-muted small fw-medium">Offers / Selected</span>
+                <h2 class="fw-bold text-success mb-0 mt-1">{{ stats.selected }}</h2>
+                <span class="extra-small text-muted" style="font-size: 11px;">Job Offers</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
+                <span class="text-muted small fw-medium">Saved Jobs</span>
+                <h2 class="fw-bold text-secondary mb-0 mt-1">{{ stats.saved }}</h2>
+                <a href="{% url 'jobs:saved_jobs' %}" class="extra-small text-decoration-none" style="font-size: 11px;">View Bookmarks</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Upcoming Interviews Column -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-calendar-event text-primary me-2"></i>Upcoming Interviews
+                    </h5>
+                    <span class="badge bg-primary-subtle text-primary">{{ upcoming_interviews.count }}</span>
+                </div>
+
+                {% if upcoming_interviews %}
+                <div class="d-flex flex-column gap-3">
+                    {% for intv in upcoming_interviews %}
+                    <div class="p-3 border rounded-3 bg-light-subtle">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-primary text-white"><i class="bi bi-clock me-1"></i>{{ intv.scheduled_at|date:"M d, Y - h:i A" }}</span>
+                            <span class="badge bg-success-subtle text-success">Confirmed</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">{{ intv.application.job.title }}</h6>
+                        <div class="small text-muted mb-2">
+                            <strong>{{ intv.application.job.company.name }}</strong> • Recruiter: {{ intv.recruiter.full_name }}
+                        </div>
+                        {% if intv.notes %}
+                        <p class="small text-secondary mb-2 fst-italic">"{{ intv.notes }}"</p>
+                        {% endif %}
+                        <div class="d-flex gap-2">
+                            {% if intv.meeting_link %}
+                            <a href="{{ intv.meeting_link }}" target="_blank" class="btn btn-sm btn-primary">
+                                <i class="bi bi-camera-video me-1"></i> Join Meeting
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'applications:tracking' intv.application.id %}" class="btn btn-sm btn-outline-secondary">
+                                Track Timeline
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-calendar-check text-muted fs-1 mb-2 d-block"></i>
+                    <p class="text-muted small mb-0">No upcoming interviews scheduled right now.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Applications Table Column -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-clock-history text-primary me-2"></i>Recent Applications
+                    </h5>
+                    <a href="{% url 'applications:my_applications' %}" class="small text-decoration-none">View All</a>
+                </div>
+
+                {% if recent_applications %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Position</th>
+                                <th>Status</th>
+                                <th>Updated</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in recent_applications %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ app.job.title }}</div>
+                                    <span class="text-muted">{{ app.job.company.name }}</span>
+                                </td>
+                                <td>
+                                    {% if app.current_status == 'Applied' %}
+                                        <span class="badge bg-primary-subtle text-primary">Applied</span>
+                                    {% elif app.current_status == 'Under Review' %}
+                                        <span class="badge bg-info-subtle text-info-emphasis">Under Review</span>
+                                    {% elif app.current_status == 'Shortlisted' %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis">Shortlisted</span>
+                                    {% elif app.current_status == 'Interview Scheduled' or app.current_status == 'Interview Completed' %}
+                                        <span class="badge bg-primary text-white">Interview</span>
+                                    {% elif app.current_status == 'Selected' %}
+                                        <span class="badge bg-success text-white">Selected</span>
+                                    {% elif app.current_status == 'Rejected' %}
+                                        <span class="badge bg-danger-subtle text-danger">Rejected</span>
+                                    {% elif app.current_status == 'Withdrawn' %}
+                                        <span class="badge bg-secondary-subtle text-secondary">Withdrawn</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-muted">{{ app.updated_at|timesince }} ago</td>
+                                <td class="text-end">
+                                    <a href="{% url 'applications:tracking' app.id %}" class="btn btn-sm btn-outline-primary py-1 px-2.5">
+                                        Track
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-folder-x text-muted fs-1 mb-2 d-block"></i>
+                    <p class="text-muted small mb-3">You haven't submitted any job applications yet.</p>
+                    <a href="{% url 'jobs:job_list' %}" class="btn btn-sm btn-primary">Discover Jobs</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

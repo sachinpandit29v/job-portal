@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Review: {{ application.seeker.full_name }} | ATS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:recruiter' %}" class="text-decoration-none">Recruiter Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'applications:recruiter_applicants' %}" class="text-decoration-none">Applicants</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ application.seeker.full_name }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header Candidate Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="row align-items-center g-3">
+            <div class="col-md-8">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-circle bg-primary text-white fw-bold d-flex align-items-center justify-content-center shadow-xs" style="width: 64px; height: 64px; font-size: 24px;">
+                        {{ application.seeker.full_name|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary-subtle text-primary">{{ application.current_status }}</span>
+                            <span class="text-muted small">Applied for: <strong class="text-dark">{{ application.job.title }}</strong></span>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-1">{{ application.seeker.full_name }}</h3>
+                        <p class="text-muted mb-0">
+                            {{ application.seeker.seeker_profile.headline|default:"Software Engineer Candidate" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 text-md-end">
+                <div class="d-flex flex-column align-items-md-end gap-1 small text-muted">
+                    <div><i class="bi bi-envelope me-1 text-primary"></i>{{ application.seeker.email }}</div>
+                    {% if application.seeker.phone %}
+                    <div><i class="bi bi-telephone me-1 text-primary"></i>{{ application.seeker.phone }}</div>
+                    {% endif %}
+                    <div><i class="bi bi-calendar me-1 text-primary"></i>Applied {{ application.created_at|date:"M d, Y" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Candidate Profile & Documents -->
+        <div class="col-lg-7">
+            <!-- Candidate Details Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-person-lines-fill text-primary me-2"></i>Candidate Profile</h5>
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Location</span>
+                        <span class="fw-semibold text-dark">{{ application.seeker.seeker_profile.location|default:"Not specified" }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Education</span>
+                        <span class="fw-semibold text-dark">{{ application.seeker.seeker_profile.education|default:"Degree details not provided" }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Years of Experience</span>
+                        <span class="fw-semibold text-dark">{{ application.seeker.seeker_profile.experience_years|default:"0" }} years</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Portfolio & Socials</span>
+                        <div class="d-flex gap-2">
+                            {% if application.seeker.seeker_profile.portfolio_url %}
+                                <a href="{{ application.seeker.seeker_profile.portfolio_url }}" target="_blank" class="small text-decoration-none">
+                                    <i class="bi bi-globe me-1"></i>Portfolio
+                                </a>
+                            {% endif %}
+                            {% if application.seeker.seeker_profile.github_url %}
+                                <a href="{{ application.seeker.seeker_profile.github_url }}" target="_blank" class="small text-decoration-none text-dark">
+                                    <i class="bi bi-github me-1"></i>GitHub
+                                </a>
+                            {% endif %}
+                            {% if application.seeker.seeker_profile.linkedin_url %}
+                                <a href="{{ application.seeker.seeker_profile.linkedin_url }}" target="_blank" class="small text-decoration-none text-primary">
+                                    <i class="bi bi-linkedin me-1"></i>LinkedIn
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if application.seeker.seeker_profile.skills %}
+                <div class="mb-3">
+                    <span class="text-muted small d-block mb-1">Declared Technical Skills</span>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for skill in application.seeker.seeker_profile.skills.split %}
+                            <span class="badge bg-light text-dark border">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if application.seeker.seeker_profile.bio %}
+                <div>
+                    <span class="text-muted small d-block mb-1">Candidate Bio</span>
+                    <p class="text-secondary small mb-0">{{ application.seeker.seeker_profile.bio }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Cover Letter & Resume View -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-file-earmark-text text-primary me-2"></i>Candidate Resume & Cover Letter</h5>
+
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-dark small text-uppercase mb-0">Attached Resume</h6>
+                        {% if application.resume_file %}
+                        <a href="{{ application.resume_file.url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye me-1"></i> View Resume
+                        </a>
+                        {% endif %}
+                    </div>
+                    <div class="p-3 bg-light rounded-3 border">
+                        <div class="fw-semibold text-dark mb-1">
+                            <i class="bi bi-file-pdf text-danger me-2"></i>{{ application.resume_filename|default:"Candidate_Resume.pdf" }}
+                        </div>
+                        {% if application.resume_content %}
+                        <div class="p-3 bg-white rounded border small mt-2 text-secondary" style="white-space: pre-line; max-height: 250px; overflow-y: auto;">
+                            {{ application.resume_content }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <h6 class="fw-bold text-dark small text-uppercase mb-2">Cover Letter</h6>
+                    <div class="p-3 bg-light rounded-3 border text-secondary small lh-lg" style="white-space: pre-line;">
+                        {{ application.cover_letter|default:"No cover letter provided." }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit History Trail -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-clock-history text-primary me-2"></i>Application Audit History</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Stage Change</th>
+                                <th>Logged By</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for h in history %}
+                            <tr>
+                                <td class="text-muted">{{ h.created_at|date:"M d, Y - h:i A" }}</td>
+                                <td>
+                                    <span class="badge bg-primary-subtle text-primary">{{ h.new_status }}</span>
+                                </td>
+                                <td>{{ h.changed_by.full_name|default:"System" }}</td>
+                                <td class="text-secondary">{{ h.remarks }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted">No history recorded yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recruiter Stage Management & Scheduling -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 candidate-review-stage-panel">
+                <h5 class="fw-bold text-dark mb-1"><i class="bi bi-kanban text-primary me-2"></i>ATS Stage Management</h5>
+                <p class="text-muted small mb-4">Advance candidate through the recruitment pipeline. Updates trigger real-time candidate notifications.</p>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Recruitment Status <span class="text-danger">*</span></label>
+                        {{ form.status }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark small">Stage Remarks (Visible to Candidate)</label>
+                        {{ form.remarks }}
+                        <div class="form-text">Will be displayed on candidate's visual progress timeline.</div>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-camera-video text-primary me-2"></i>Interview Scheduling</h6>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark small">Date & Time</label>
+                        {{ form.interview_date }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-dark small">Meeting Link (Google Meet, Zoom, etc.)</label>
+                        {{ form.interview_link }}
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold text-dark small">Private Recruiter Notes (Internal only)</label>
+                        {{ form.recruiter_notes }}
+                        <div class="form-text">Private to recruiter and interview panel.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2.5 fw-semibold shadow-sm">
+                        <i class="bi bi-check-circle me-1"></i> Update Candidate Stage
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

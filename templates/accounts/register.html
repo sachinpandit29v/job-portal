@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Job Portal &amp; ATS{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card p-4 p-md-5 border shadow-sm mx-auto" style="max-width: 520px;">
+    
+    <div class="text-center mb-4">
+      <h3 class="fw-extrabold text-dark">
+        {% if role_type == 'seeker' %}
+          Register as Job Seeker
+        {% else %}
+          Register as Recruiter
+        {% endif %}
+      </h3>
+      <p class="text-muted small">
+        {% if role_type == 'seeker' %}
+          Build your candidate profile, upload resumes, and track applications
+        {% else %}
+          Publish vacancies, review applicant resumes, and manage recruitment
+        {% endif %}
+      </p>
+
+      <!-- Role Switcher Tabs -->
+      <div class="btn-group w-100 mt-2">
+        <a href="{% url 'accounts:register_seeker' %}" class="btn btn-sm {% if role_type == 'seeker' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+          <i class="bi bi-mortarboard me-1"></i> Job Seeker
+        </a>
+        <a href="{% url 'accounts:register_recruiter' %}" class="btn btn-sm {% if role_type == 'recruiter' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
+          <i class="bi bi-building me-1"></i> Recruiter
+        </a>
+      </div>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger small p-2">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Full Legal Name</label>
+        {{ form.full_name }}
+        {% if form.full_name.errors %}<div class="text-danger small">{{ form.full_name.errors }}</div>{% endif %}
+      </div>
+
+      {% if role_type == 'recruiter' %}
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Hiring Organization / Company Name</label>
+          {{ form.company_name }}
+          {% if form.company_name.errors %}<div class="text-danger small">{{ form.company_name.errors }}</div>{% endif %}
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Your Official Designation</label>
+          {{ form.designation }}
+          {% if form.designation.errors %}<div class="text-danger small">{{ form.designation.errors }}</div>{% endif %}
+        </div>
+      {% else %}
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Professional Headline</label>
+          {{ form.headline }}
+          {% if form.headline.errors %}<div class="text-danger small">{{ form.headline.errors }}</div>{% endif %}
+        </div>
+      {% endif %}
+
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Email Address</label>
+          {{ form.email }}
+          {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Phone Number</label>
+          {{ form.phone }}
+          {% if form.phone.errors %}<div class="text-danger small">{{ form.phone.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Password</label>
+          {{ form.password }}
+          {% if form.password.errors %}<div class="text-danger small">{{ form.password.errors }}</div>{% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Confirm Password</label>
+          {{ form.confirm_password }}
+          {% if form.confirm_password.errors %}<div class="text-danger small">{{ form.confirm_password.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 fw-bold py-2 mt-2">
+        Complete Registration
+      </button>
+    </form>
+
+    <div class="text-center mt-4 small text-muted">
+      Already have an account? 
+      <a href="{% url 'accounts:login' %}" class="text-primary-custom fw-semibold text-decoration-none">Sign In</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

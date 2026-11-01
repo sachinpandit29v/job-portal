@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}About Us - Job Portal &amp; ATS{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <span class="text-secondary-custom fw-bold text-uppercase small">About the platform</span>
+    <h1 class="fw-bold text-dark mt-2 mb-3">A clearer way to connect talent and employers</h1>
+    <p class="lead text-muted mx-auto" style="max-width: 760px;">
+      JobPortalATS brings job discovery, hiring workflows, and application tracking together in one transparent recruitment platform.
+    </p>
+  </div>
+
+  <div class="row g-4 mb-5">
+    <div class="col-lg-7">
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 h-100">
+        <h4 class="fw-bold text-dark mb-3">Built for a better hiring journey</h4>
+        <p class="text-muted">
+          Candidates can discover relevant vacancies, submit applications, and follow each stage of their progress. Recruiters can manage postings, review applicants, schedule interviews, and make informed decisions from a focused ATS workspace.
+        </p>
+        <p class="text-muted mb-0">
+          Every application follows a clear workflow from <strong>Applied</strong> through review, shortlisting, interviews, and selection, helping candidates stay informed and hiring teams stay organized.
+        </p>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 h-100 bg-primary-custom">
+        <h4 class="fw-bold mb-3">Our focus</h4>
+        <div class="d-flex gap-3 mb-3">
+          <i class="bi bi-eye text-info fs-4"></i>
+          <div><strong>Transparency</strong><p class="small text-white-50 mb-0">Clear application stages and timely status updates.</p></div>
+        </div>
+        <div class="d-flex gap-3 mb-3">
+          <i class="bi bi-people text-info fs-4"></i>
+          <div><strong>Better collaboration</strong><p class="small text-white-50 mb-0">A shared workflow for candidates and hiring teams.</p></div>
+        </div>
+        <div class="d-flex gap-3">
+          <i class="bi bi-shield-check text-info fs-4"></i>
+          <div><strong>Responsible access</strong><p class="small text-white-50 mb-0">Role-based access keeps portal data in the right hands.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="fw-bold text-dark text-center mb-4">One platform, three experiences</h3>
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+        <i class="bi bi-person-workspace text-primary fs-2 mb-3"></i>
+        <h5 class="fw-bold text-dark">For job seekers</h5>
+        <p class="text-muted small mb-0">Search jobs, maintain a professional profile, apply with your resume, and track recruiter feedback and interview progress.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+        <i class="bi bi-building text-primary fs-2 mb-3"></i>
+        <h5 class="fw-bold text-dark">For recruiters</h5>
+        <p class="text-muted small mb-0">Publish vacancies, manage your candidate pipeline, update stages, schedule interviews, and review hiring analytics.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+        <i class="bi bi-shield-lock text-primary fs-2 mb-3"></i>
+        <h5 class="fw-bold text-dark">For administrators</h5>
+        <p class="text-muted small mb-0">Oversee users, job categories, reported listings, platform activity, and messages submitted through the contact page.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

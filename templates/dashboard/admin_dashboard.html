@@ -1,0 +1,605 @@
+{% extends "base.html" %}
+
+{% block title %}System Administration Dashboard | Job Portal & ATS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-danger text-white fw-bold"><i class="bi bi-shield-lock-fill me-1"></i>Super Admin Console</span>
+            </div>
+            <h2 class="fw-bold text-dark mb-0">Platform Administration & Oversight</h2>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/admin/" target="_blank" class="btn btn-outline-dark">
+                <i class="bi bi-gear-fill me-1"></i> Django Admin Panel
+            </a>
+            <a href="{% url 'jobs:job_list' %}" class="btn btn-primary">
+                <i class="bi bi-eye me-1"></i> View Portal Front
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
+                <span class="text-muted small fw-medium">Total Registered Users</span>
+                <h2 class="fw-bold text-primary mb-0 mt-1">{{ stats.total_users }}</h2>
+                <div class="extra-small text-muted mt-1" style="font-size: 11px;">
+                    {{ stats.total_seekers }} Seekers • {{ stats.total_recruiters }} Recruiters
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
+                <span class="text-muted small fw-medium">Active Vacancies</span>
+                <h2 class="fw-bold text-success mb-0 mt-1">{{ stats.active_jobs }}</h2>
+                <div class="extra-small text-muted mt-1" style="font-size: 11px;">
+                    Recruiters publish directly
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
+                <span class="text-muted small fw-medium">Total Applications</span>
+                <h2 class="fw-bold text-info mb-0 mt-1">{{ stats.total_applications }}</h2>
+                <div class="extra-small text-muted mt-1" style="font-size: 11px;">
+                    Tracked via ATS Workflow
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 text-center h-100">
+                <span class="text-muted small fw-medium">Pending Moderation Reports</span>
+                <h2 class="fw-bold {% if stats.pending_reports > 0 %}text-danger{% else %}text-muted{% endif %} mb-0 mt-1">{{ stats.pending_reports }}</h2>
+                <div class="extra-small text-muted mt-1" style="font-size: 11px;">
+                    Compliance & Safety Flagging
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Server-rendered analytics -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3">Application Status</h5>
+                <div class="row g-2">
+                    {% for item in status_chart %}
+                    <div class="col-6 col-md-4">
+                        <div class="border rounded-3 p-3 h-100">
+                            <span class="text-muted small d-block">{{ item.label }}</span>
+                            <strong class="fs-4 text-primary">{{ item.count }}</strong>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12"><p class="text-muted mb-0">No applications recorded.</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <h5 class="fw-bold text-dark mb-3">Jobs by Category</h5>
+                <div class="list-group list-group-flush">
+                    {% for item in category_chart %}
+                    <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                        <span class="small text-dark">{{ item.name }}</span>
+                        <strong class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">{{ item.count }}</strong>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted mb-0">No categories recorded.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Tabs -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+        <div class="card-header bg-white border-bottom p-3">
+            <ul class="nav nav-tabs card-header-tabs" id="adminTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active fw-semibold" id="users-tab" data-bs-toggle="tab" data-bs-target="#users-pane" type="button">
+                        <i class="bi bi-people me-1"></i> User Management ({{ stats.total_seekers }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-semibold" id="recruiters-tab" data-bs-toggle="tab" data-bs-target="#recruiters-pane" type="button">
+                        <i class="bi bi-building me-1"></i> Recruiter Management ({{ stats.total_recruiters }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-semibold" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports-pane" type="button">
+                        <i class="bi bi-flag me-1"></i> Reported Listings ({{ report_page.paginator.count }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-semibold" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories-pane" type="button">
+                        <i class="bi bi-tags me-1"></i> Job Categories ({{ category_page.paginator.count }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-semibold" id="contact-messages-tab" data-bs-toggle="tab" data-bs-target="#contact-messages-pane" type="button">
+                        <i class="bi bi-envelope me-1"></i> Contact Messages ({{ contact_messages|length }})
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="tab-content" id="adminTabsContent">
+                <!-- Tab 1: Users -->
+                <div class="tab-pane fade show active" id="users-pane">
+                    <div class="p-3 border-bottom">
+                        <form method="get" class="row g-2 align-items-end">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Search job seekers</label>
+                                <input type="text" name="seeker_q" value="{{ seeker_query }}" class="form-control" placeholder="Name or email">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Account status</label>
+                                <select name="seeker_status" class="form-select">
+                                    <option value="all" {% if seeker_status == 'all' %}selected{% endif %}>All statuses</option>
+                                    <option value="active" {% if seeker_status == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if seeker_status == 'inactive' %}selected{% endif %}>Deactivated</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button class="btn btn-primary flex-grow-1" type="submit">Search</button>
+                                <a class="btn btn-light border" href="{% url 'dashboard:admin' %}">Reset</a>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Job Seeker</th>
+                                    <th>Status</th>
+                                    <th>Joined Date</th>
+                                    <th class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in seeker_page %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <div class="fw-bold text-dark">{{ u.full_name }}</div>
+                                        <span class="text-muted small">{{ u.email }}</span>
+                                    </td>
+                                    <td>
+                                        {% if u.is_active %}
+                                            <span class="badge bg-success text-white">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary text-white">Deactivated</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small text-muted">{{ u.created_at|date:"M d, Y" }}</td>
+                                    <td class="text-end pe-4">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#seekerDetails{{ u.id }}">View Details</button>
+                                        <form method="post" class="d-inline" action="{% url 'dashboard:admin_toggle_user' u.id %}" onsubmit="return confirm('Change this account status?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                                                {% if u.is_active %}Deactivate{% else %}Activate{% endif %}
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <div class="modal fade" id="seekerDetails{{ u.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header"><h5 class="modal-title">Job Seeker Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                            <div class="modal-body">
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-5">Name</dt><dd class="col-sm-7">{{ u.full_name }}</dd>
+                                                    <dt class="col-sm-5">Email</dt><dd class="col-sm-7">{{ u.email }}</dd>
+                                                    <dt class="col-sm-5">Phone</dt><dd class="col-sm-7">{{ u.phone|default:"Not provided" }}</dd>
+                                                    <dt class="col-sm-5">Status</dt><dd class="col-sm-7">{{ u.is_active|yesno:"Active,Deactivated" }}</dd>
+                                                    <dt class="col-sm-5">Joined</dt><dd class="col-sm-7">{{ u.created_at|date:"M d, Y H:i" }}</dd>
+                                                </dl>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center py-4 text-muted">No job seekers found.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% include "dashboard/admin_pagination.html" with page_obj=seeker_page page_param="seeker_page" extra_query=pagination_queries.seeker_page %}
+                </div>
+
+                <!-- Tab 2: Recruiters -->
+                <div class="tab-pane fade" id="recruiters-pane">
+                    <div class="p-3 border-bottom">
+                        <form method="get" class="row g-2 align-items-end">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Search recruiters</label>
+                                <input type="text" name="recruiter_q" value="{{ recruiter_query }}" class="form-control" placeholder="Recruiter name, email, or company">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Account status</label>
+                                <select name="recruiter_status" class="form-select">
+                                    <option value="all" {% if recruiter_status == 'all' %}selected{% endif %}>All statuses</option>
+                                    <option value="active" {% if recruiter_status == 'active' %}selected{% endif %}>Active</option>
+                                    <option value="inactive" {% if recruiter_status == 'inactive' %}selected{% endif %}>Deactivated</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button class="btn btn-primary flex-grow-1" type="submit">Search</button>
+                                <a class="btn btn-light border" href="{% url 'dashboard:admin' %}">Reset</a>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Recruiter Name</th><th>Company Name</th><th>Email Address</th>
+                                    <th>Account Status</th><th>Joined Date</th><th class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for recruiter in recruiter_page %}
+                                <tr>
+                                    <td class="ps-4 fw-bold">{{ recruiter.user.full_name }}</td>
+                                    <td>{{ recruiter.company.name }}</td>
+                                    <td><a href="mailto:{{ recruiter.user.email }}">{{ recruiter.user.email }}</a></td>
+                                    <td><span class="badge {% if recruiter.user.is_active %}bg-success{% else %}bg-secondary{% endif %}">{{ recruiter.user.is_active|yesno:"Active,Deactivated" }}</span></td>
+                                    <td class="small text-muted">{{ recruiter.created_at|date:"M d, Y" }}</td>
+                                    <td class="text-end pe-4">
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#recruiterDetails{{ recruiter.user.id }}">View Details</button>
+                                        <div class="dropdown d-inline-block">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">Manage</button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#recruiterDetails{{ recruiter.user.id }}">View Posted Jobs</button></li>
+                                                <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#companyDetails{{ recruiter.user.id }}">View Company Profile</button></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <form method="post" action="{% url 'dashboard:admin_toggle_user' recruiter.user.id %}" onsubmit="return confirm('Change this recruiter account status?');">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="dropdown-item {% if recruiter.user.is_active %}text-danger{% else %}text-success{% endif %}">
+                                                            {% if recruiter.user.is_active %}Deactivate Account{% else %}Activate Account{% endif %}
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <div class="modal fade" id="recruiterDetails{{ recruiter.user.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered"><div class="modal-content">
+                                        <div class="modal-header"><h5 class="modal-title">Recruiter Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                        <div class="modal-body">
+                                            <h6 class="fw-bold">Recruiter Information</h6>
+                                            <dl class="row">
+                                                <dt class="col-sm-4">Name</dt><dd class="col-sm-8">{{ recruiter.user.full_name }}</dd>
+                                                <dt class="col-sm-4">Email</dt><dd class="col-sm-8">{{ recruiter.user.email }}</dd>
+                                                <dt class="col-sm-4">Registration Date</dt><dd class="col-sm-8">{{ recruiter.user.created_at|date:"M d, Y H:i" }}</dd>
+                                                <dt class="col-sm-4">Account Status</dt><dd class="col-sm-8">{{ recruiter.user.is_active|yesno:"Active,Deactivated" }}</dd>
+                                            </dl>
+                                            <h6 class="fw-bold border-top pt-3">Company Information</h6>
+                                            <dl class="row">
+                                                <dt class="col-sm-4">Company</dt><dd class="col-sm-8">{{ recruiter.company.name }}</dd>
+                                                <dt class="col-sm-4">Industry</dt><dd class="col-sm-8">{{ recruiter.company.industry }}</dd>
+                                                <dt class="col-sm-4">Website</dt><dd class="col-sm-8">{{ recruiter.company.website|default:"Not provided" }}</dd>
+                                                <dt class="col-sm-4">Location</dt><dd class="col-sm-8">{{ recruiter.company.location }}</dd>
+                                                <dt class="col-sm-4">Company Size</dt><dd class="col-sm-8">{{ recruiter.company.company_size }}</dd>
+                                                <dt class="col-sm-4">Description</dt><dd class="col-sm-8">{{ recruiter.company.description|default:"Not provided" }}</dd>
+                                            </dl>
+                                            <h6 class="fw-bold border-top pt-3">Recruitment Statistics</h6>
+                                            <div class="row g-2 text-center">
+                                                <div class="col-6 col-md-3"><div class="border rounded p-2"><strong>{{ recruiter.total_jobs }}</strong><small class="d-block text-muted">Total Jobs</small></div></div>
+                                                <div class="col-6 col-md-3"><div class="border rounded p-2"><strong>{{ recruiter.active_jobs }}</strong><small class="d-block text-muted">Active Jobs</small></div></div>
+                                                <div class="col-6 col-md-3"><div class="border rounded p-2"><strong>{{ recruiter.closed_jobs }}</strong><small class="d-block text-muted">Closed Jobs</small></div></div>
+                                                <div class="col-6 col-md-3"><div class="border rounded p-2"><strong>{{ recruiter.total_applications }}</strong><small class="d-block text-muted">Applications</small></div></div>
+                                            </div>
+                                            <h6 class="fw-bold border-top pt-3 mt-3">Posted Jobs</h6>
+                                            {% for job in recruiter.user.admin_posted_jobs %}
+                                                <div class="d-flex justify-content-between border-bottom py-2"><span>{{ job.title }}</span><span class="badge bg-light text-dark">{{ job.application_count }} applications</span></div>
+                                            {% empty %}<p class="text-muted small">No jobs posted.</p>{% endfor %}
+                                        </div>
+                                    </div></div>
+                                </div>
+                                <div class="modal fade" id="companyDetails{{ recruiter.user.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+                                        <div class="modal-header"><h5 class="modal-title">{{ recruiter.company.name }}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                        <div class="modal-body"><p><strong>Industry:</strong> {{ recruiter.company.industry }}</p><p><strong>Location:</strong> {{ recruiter.company.location }}</p><p><strong>Size:</strong> {{ recruiter.company.company_size }}</p><p><strong>Website:</strong> {{ recruiter.company.website|default:"Not provided" }}</p><p class="mb-0">{{ recruiter.company.description|default:"No company description provided." }}</p></div>
+                                    </div></div>
+                                </div>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center py-4 text-muted">No recruiters found.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% include "dashboard/admin_pagination.html" with page_obj=recruiter_page page_param="recruiter_page" extra_query=pagination_queries.recruiter_page %}
+                </div>
+
+                <!-- Tab 3: Reports -->
+                <div class="tab-pane fade" id="reports-pane">
+                    <div class="p-3 border-bottom">
+                        <form method="get" class="row g-2 align-items-end">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Search reported jobs</label>
+                                <input type="text" name="report_q" value="{{ report_query }}" class="form-control" placeholder="Job, company, or recruiter">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-semibold">Report status</label>
+                                <select name="report_status" class="form-select">
+                                    <option value="all" {% if report_status == 'all' %}selected{% endif %}>All statuses</option>
+                                    <option value="pending" {% if report_status == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="under_review" {% if report_status == 'under_review' %}selected{% endif %}>Under Review</option>
+                                    <option value="resolved" {% if report_status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                    <option value="dismissed" {% if report_status == 'dismissed' %}selected{% endif %}>Dismissed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex gap-2">
+                                <button class="btn btn-primary flex-grow-1" type="submit">Search</button>
+                                <a class="btn btn-light border" href="{% url 'dashboard:admin' %}">Reset</a>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Job Title</th>
+                                    <th>Company Name</th>
+                                    <th>Reported By</th>
+                                    <th>Report Reason</th>
+                                    <th>Reported Date</th>
+                                    <th>Report Status</th>
+                                    <th>Job Status</th>
+                                    <th class="text-end pe-4">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in report_page %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <a href="{% url 'jobs:job_detail' r.job.id %}" class="fw-bold text-dark text-decoration-none">{{ r.job.title }}</a>
+                                        <div class="small text-muted">Recruiter: {{ r.job.recruiter.full_name }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ r.job.company.name }}</div>
+                                        <a href="mailto:{{ r.job.recruiter.email }}" class="small">{{ r.job.recruiter.email }}</a>
+                                    </td>
+                                    <td>
+                                        <div class="small fw-semibold text-dark">{{ r.reporter.full_name }}</div>
+                                        <a href="mailto:{{ r.reporter.email }}" class="extra-small">{{ r.reporter.email }}</a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger-subtle text-danger">{{ r.reason }}</span>
+                                        <p class="small text-muted mb-0 mt-1">{{ r.details|truncatewords:15 }}</p>
+                                    </td>
+                                    <td>
+                                        <span class="small text-muted">{{ r.created_at|date:"M d, Y H:i" }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if r.status == 'pending' %}bg-warning-subtle text-warning-emphasis{% elif r.status == 'under_review' %}bg-info text-dark{% elif r.status == 'dismissed' %}bg-secondary text-white{% else %}bg-success text-white{% endif %}">
+                                            {% if r.status == 'pending' %}Pending{% elif r.status == 'under_review' %}Under Review{% else %}{{ r.status|title }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if r.job.status == 'active' %}bg-success{% elif r.job.status == 'closed' %}bg-secondary{% else %}bg-danger{% endif %}">
+                                            {% if r.job.status == 'rejected' %}Removed{% else %}{{ r.job.status|title }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        {% if r.status == 'pending' or r.status == 'under_review' %}
+                                        <div class="d-flex justify-content-end gap-1 flex-wrap">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportDetails{{ r.id }}">Details</button>
+                                            {% if r.status == 'pending' %}
+                                            <form method="post" action="{% url 'dashboard:admin_report_action' r.id 'under_review' %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-outline-info">Review</button>
+                                            </form>
+                                            {% endif %}
+                                            <form method="post" action="{% url 'dashboard:admin_report_action' r.id 'dismiss' %}" onsubmit="return confirm('Dismiss this report as invalid?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-light border">Dismiss</button>
+                                            </form>
+                                            <form method="post" action="{% url 'dashboard:admin_report_action' r.id 'resolve' %}" onsubmit="return confirm('Mark this report as resolved without removing the job?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-success">Resolve</button>
+                                            </form>
+                                            <form method="post" action="{% url 'dashboard:admin_report_action' r.id 'remove_job' %}" onsubmit="return confirm('Remove this job from the platform?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-sm btn-danger">Remove Job</button>
+                                            </form>
+                                        </div>
+                                        {% else %}
+                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#reportDetails{{ r.id }}">View Details</button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <div class="modal fade" id="reportDetails{{ r.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Report Details</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <dl class="row mb-0">
+                                                    <dt class="col-sm-4">Reported Job</dt><dd class="col-sm-8">{{ r.job.title }}</dd>
+                                                    <dt class="col-sm-4">Company</dt><dd class="col-sm-8">{{ r.job.company.name }}</dd>
+                                                    <dt class="col-sm-4">Recruiter</dt><dd class="col-sm-8">{{ r.job.recruiter.full_name }} ({{ r.job.recruiter.email }})</dd>
+                                                    <dt class="col-sm-4">Reported By</dt><dd class="col-sm-8">{{ r.reporter.full_name }} ({{ r.reporter.email }})</dd>
+                                                    <dt class="col-sm-4">Reason</dt><dd class="col-sm-8">{{ r.reason }}</dd>
+                                                    <dt class="col-sm-4">Description</dt><dd class="col-sm-8">{{ r.details|default:"No description provided."|linebreaksbr }}</dd>
+                                                    <dt class="col-sm-4">Reported Date</dt><dd class="col-sm-8">{{ r.created_at|date:"M d, Y H:i" }}</dd>
+                                                    <dt class="col-sm-4">Job Status</dt><dd class="col-sm-8">{% if r.job.status == 'rejected' %}Removed{% else %}{{ r.job.status|title }}{% endif %}</dd>
+                                                </dl>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <tr><td colspan="8" class="text-center py-4 text-muted">No reported listings logged.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% include "dashboard/admin_pagination.html" with page_obj=report_page page_param="report_page" extra_query=pagination_queries.report_page %}
+                </div>
+
+                <!-- Tab 4: Categories -->
+                <div class="tab-pane fade" id="categories-pane">
+                    <div class="p-4">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">Job Categories</h5>
+                                <p class="text-muted small mb-0">Organize vacancies and monitor category usage.</p>
+                            </div>
+
+                            <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 align-self-start align-self-lg-center">
+                                {{ category_page.paginator.count }} total categories
+                            </span>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-3 mb-4">
+                            <div class="card-body p-3">
+                                <form method="get" class="row g-2 align-items-end">
+                                    <div class="col-md-8">
+                                        <label class="form-label small fw-semibold mb-1">Search categories</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                                            <input type="text" name="category_q" value="{{ category_query }}" class="form-control" placeholder="Search by category name or description">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 d-flex gap-2">
+                                        <button class="btn btn-outline-primary flex-grow-1" type="submit"><i class="bi bi-search me-1"></i>Search</button>
+                                        <a class="btn btn-light border" href="{% url 'dashboard:admin' %}">Reset</a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="card border-0 shadow-sm rounded-3 mb-4 category-create-card">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center gap-2 mb-3">
+                                    <span class="category-section-icon bg-primary-custom"><i class="bi bi-plus-lg"></i></span>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">Add Category</h6>
+                                        <small class="text-muted">Create a category for new job vacancies.</small>
+                                    </div>
+                                </div>
+                                <form method="post" action="{% url 'dashboard:admin_category_add' %}" class="row g-3 align-items-end">
+                                    {% csrf_token %}
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold">Category name</label>
+                                        {{ category_form.name }}
+                                    </div>
+                                    <div class="col-md-8">
+                                        <label class="form-label small fw-semibold">Description</label>
+                                        {{ category_form.description }}
+                                    </div>
+                                    <div class="col-12 d-flex justify-content-end">
+                                        <button class="btn btn-primary px-4" type="submit"><i class="bi bi-plus-lg me-1"></i>Add Category</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            {% for cat in category_page %}
+                            <div class="col-md-4 col-lg-3">
+                                <div class="card category-card border-0 shadow-sm h-100">
+                                    <div class="card-body p-3 d-flex flex-column">
+                                        <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+                                            <span class="badge rounded-pill {% if cat.job_count %}bg-success-subtle text-success{% else %}bg-light text-muted border{% endif %}">
+                                                {{ cat.job_count }} vacancy{{ cat.job_count|pluralize }}
+                                            </span>
+                                        </div>
+                                        <h6 class="fw-bold text-dark mb-1">{{ cat.name }}</h6>
+                                        <p class="category-description text-muted small mb-3">
+                                            {{ cat.description|default:"No description provided."|truncatewords:16 }}
+                                        </p>
+                                        <div class="d-flex gap-2 mt-auto pt-2 border-top">
+                                            <button type="button" class="btn btn-sm btn-outline-primary flex-grow-1" data-bs-toggle="modal" data-bs-target="#editCategory{{ cat.id }}"><i class="bi bi-pencil me-1"></i>Edit</button>
+                                            <form method="post" action="{% url 'dashboard:admin_category_action' cat.id 'delete' %}" onsubmit="return confirm('Delete this category? Categories used by jobs cannot be deleted.');">
+                                                {% csrf_token %}<button type="submit" class="btn btn-sm btn-outline-danger" {% if cat.job_count %}disabled title="Reassign jobs before removing this category"{% endif %}><i class="bi bi-trash me-1"></i>Remove</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal fade" id="editCategory{{ cat.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+                                    <form method="post" action="{% url 'dashboard:admin_category_action' cat.id 'edit' %}">
+                                        {% csrf_token %}
+                                        <div class="modal-header"><h5 class="modal-title"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Category</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                        <div class="modal-body">
+                                            <label class="form-label small fw-semibold">Category name</label><input name="name" value="{{ cat.name }}" class="form-control mb-3" required>
+                                            <label class="form-label small fw-semibold">Description</label><textarea name="description" class="form-control" rows="3">{{ cat.description }}</textarea>
+                                        </div>
+                                        <div class="modal-footer"><button type="submit" class="btn btn-primary">Save Changes</button></div>
+                                    </form>
+                                </div></div>
+                            </div>
+                            {% empty %}
+                            <div class="col-12"><p class="text-muted text-center py-4 mb-0">No categories found.</p></div>
+                            {% endfor %}
+                        </div>
+                        {% include "dashboard/admin_pagination.html" with page_obj=category_page page_param="category_page" extra_query=pagination_queries.category_page %}
+                    </div>
+                </div>
+
+                <!-- Tab 5: Contact Messages -->
+                <div class="tab-pane fade" id="contact-messages-pane">
+                    <div class="p-4">
+                        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-2 mb-4">
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">Received Contact Messages</h5>
+                                <p class="text-muted small mb-0">Messages submitted through the public contact page.</p>
+                            </div>
+                            <span class="badge rounded-pill bg-primary-subtle text-primary px-3 py-2 align-self-start align-self-lg-center">
+                                {{ contact_messages|length }} recent messages
+                            </span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Sender</th>
+                                        <th>Subject</th>
+                                        <th>Message</th>
+                                        <th class="text-end">Received</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for contact in contact_messages %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold text-dark">{{ contact.name }}</div>
+                                            <a href="mailto:{{ contact.email }}" class="small text-decoration-none">{{ contact.email }}</a>
+                                        </td>
+                                        <td class="fw-semibold">{{ contact.subject }}</td>
+                                        <td class="text-muted small" style="min-width: 280px;">{{ contact.message|linebreaksbr }}</td>
+                                        <td class="text-end text-muted small text-nowrap">{{ contact.created_at|date:"M d, Y H:i" }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-muted">
+                                            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                            No contact messages have been received yet.
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Recruiter Dashboard | Job Portal & ATS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Recruiter Hero Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-primary text-white">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <span class="badge bg-white text-primary fw-bold mb-2">Employer Recruitment Console</span>
+                <h2 class="fw-bold mb-1">{{ company.name|default:"Recruiter Dashboard" }} 🏢</h2>
+                <p class="text-white-50 mb-0">Manage job postings, review qualified candidates, and advance hiring workflows.</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end">
+                <a href="{% url 'jobs:post_job' %}" class="btn btn-warning text-dark fw-bold px-3 py-2 shadow-sm">
+                    <i class="bi bi-plus-circle me-1"></i> Post Vacancy
+                </a>
+                <a href="{% url 'dashboard:recruiter_analytics' %}" class="btn btn-light text-primary fw-semibold px-3 py-2">
+                    <i class="bi bi-graph-up me-1"></i> Analytics
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3 mb-4">
+        <div class="col">
+            <a href="{% url 'jobs:manage_jobs' %}" class="card dashboard-stat-card border-0 shadow-sm rounded-4 p-3 text-center h-100 text-decoration-none">
+                <i class="bi bi-briefcase-fill text-success fs-4 mb-2"></i>
+                <span class="text-muted small fw-medium">Active Jobs</span>
+                <h2 class="fw-bold text-success mb-0 mt-1">{{ stats.active_jobs }}</h2>
+                <span class="extra-small text-muted" style="font-size: 11px;">Manage Jobs</span>
+            </a>
+        </div>
+        <div class="col">
+            <a href="{% url 'applications:recruiter_applicants' %}" class="card dashboard-stat-card border-0 shadow-sm rounded-4 p-3 text-center h-100 text-decoration-none">
+                <i class="bi bi-people-fill text-primary fs-4 mb-2"></i>
+                <span class="text-muted small fw-medium">Total Applicants</span>
+                <h2 class="fw-bold text-primary mb-0 mt-1">{{ stats.total_applicants }}</h2>
+                <span class="extra-small text-muted" style="font-size: 11px;">View Pipeline</span>
+            </a>
+        </div>
+        <div class="col">
+            <a href="{% url 'applications:recruiter_applicants' %}?status=Under%20Review" class="card dashboard-stat-card border-0 shadow-sm rounded-4 p-3 text-center h-100 text-decoration-none">
+                <i class="bi bi-search text-info fs-4 mb-2"></i>
+                <span class="text-muted small fw-medium">Under Review</span>
+                <h2 class="fw-bold text-info mb-0 mt-1">{{ stats.under_review }}</h2>
+                <span class="extra-small text-muted" style="font-size: 11px;">Review candidates</span>
+            </a>
+        </div>
+        <div class="col">
+            <a href="{% url 'applications:recruiter_applicants' %}?status=Shortlisted" class="card dashboard-stat-card border-0 shadow-sm rounded-4 p-3 text-center h-100 text-decoration-none">
+                <i class="bi bi-star-fill text-warning fs-4 mb-2"></i>
+                <span class="text-muted small fw-medium">Shortlisted</span>
+                <h2 class="fw-bold text-warning-emphasis mb-0 mt-1">{{ stats.shortlisted }}</h2>
+                <span class="extra-small text-muted" style="font-size: 11px;">Screened candidates</span>
+            </a>
+        </div>
+        <div class="col">
+            <a href="{% url 'applications:recruiter_applicants' %}?status=Interview%20Scheduled" class="card dashboard-stat-card border-0 shadow-sm rounded-4 p-3 text-center h-100 text-decoration-none">
+                <i class="bi bi-calendar-check-fill text-secondary fs-4 mb-2"></i>
+                <span class="text-muted small fw-medium">Interviews Scheduled</span>
+                <h2 class="fw-bold text-secondary mb-0 mt-1">{{ stats.interviews_scheduled }}</h2>
+                <span class="extra-small text-muted" style="font-size: 11px;">Upcoming interviews</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4 align-items-stretch">
+        <!-- Recent Applicants List -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0">
+                        <i class="bi bi-people text-primary me-2"></i>Recent Candidate Applications
+                    </h5>
+                    <a href="{% url 'applications:recruiter_applicants' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-arrow-up-right-square me-1"></i>View All Applications
+                    </a>
+                </div>
+
+                {% if recent_applicants %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 small">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Candidate Name</th>
+                                <th>Job Title</th>
+                                <th>Applied Date</th>
+                                <th>Application Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in recent_applicants %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ app.seeker.full_name }}</div>
+                                    <span class="text-muted">{{ app.seeker.email }}</span>
+                                </td>
+                                <td>
+                                    <span class="fw-medium text-dark">{{ app.job.title }}</span>
+                                </td>
+                                <td class="text-muted text-nowrap">{{ app.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if app.current_status == 'Applied' %}
+                                        <span class="badge badge-applied"><i class="bi bi-send me-1"></i>Applied</span>
+                                    {% elif app.current_status == 'Under Review' %}
+                                        <span class="badge badge-review"><i class="bi bi-search me-1"></i>Under Review</span>
+                                    {% elif app.current_status == 'Shortlisted' %}
+                                        <span class="badge badge-shortlisted"><i class="bi bi-star-fill me-1"></i>Shortlisted</span>
+                                    {% elif app.current_status == 'Interview Scheduled' or app.current_status == 'Interview Completed' %}
+                                        <span class="badge badge-interview"><i class="bi bi-calendar-check me-1"></i>{{ app.current_status }}</span>
+                                    {% elif app.current_status == 'Selected' %}
+                                        <span class="badge badge-selected"><i class="bi bi-check-circle me-1"></i>Selected</span>
+                                    {% elif app.current_status == 'Rejected' %}
+                                        <span class="badge badge-rejected"><i class="bi bi-x-circle me-1"></i>Rejected</span>
+                                    {% else %}
+                                        <span class="badge badge-withdrawn"><i class="bi bi-dash-circle me-1"></i>{{ app.current_status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">
+                                    <a href="{% url 'applications:applicant_detail' app.id %}" class="btn btn-sm btn-primary py-1 px-3">
+                                        <i class="bi bi-eye me-1"></i>View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox text-muted fs-1 mb-2 d-block"></i>
+                    <h6 class="fw-bold text-dark mb-1">No applications yet</h6>
+                    <p class="text-muted small mb-3">Applications for your job postings will appear here.</p>
+                    <a href="{% url 'applications:recruiter_applicants' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-people me-1"></i>View All Applications
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Applicant Pipeline | Recruiter ATS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header banner -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-people-fill text-primary me-2"></i>Recruitment Applicant Pipeline
+            </h2>
+            <p class="text-muted mb-0">Screen candidate submissions, schedule interviews, and advance hiring stages.</p>
+        </div>
+        <a href="{% url 'jobs:manage_jobs' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-briefcase me-1"></i> Manage Vacancies
+        </a>
+    </div>
+
+    <!-- Filter Bar Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold small text-dark">Filter by Job Vacancy</label>
+                <select name="job_id" class="form-select" onchange="this.form.submit()">
+                    <option value="all">All Vacancies ({{ recruiter_jobs.count }})</option>
+                    {% for j in recruiter_jobs %}
+                        <option value="{{ j.id }}" {% if selected_job_id == j.id|stringformat:"i" %}selected{% endif %}>
+                            {{ j.title }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small text-dark">Filter by Stage</label>
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="all">All Stages</option>
+                    <option value="Applied" {% if selected_status == 'Applied' %}selected{% endif %}>Applied</option>
+                    <option value="Under Review" {% if selected_status == 'Under Review' %}selected{% endif %}>Under Review</option>
+                    <option value="Shortlisted" {% if selected_status == 'Shortlisted' %}selected{% endif %}>Shortlisted</option>
+                    <option value="Interview Scheduled" {% if selected_status == 'Interview Scheduled' %}selected{% endif %}>Interview Scheduled</option>
+                    <option value="Interview Completed" {% if selected_status == 'Interview Completed' %}selected{% endif %}>Interview Completed</option>
+                    <option value="Selected" {% if selected_status == 'Selected' %}selected{% endif %}>Selected</option>
+                    <option value="Rejected" {% if selected_status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                    <option value="Withdrawn" {% if selected_status == 'Withdrawn' %}selected{% endif %}>Withdrawn</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <a href="{% url 'applications:recruiter_applicants' %}" class="btn btn-light border w-100">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filters
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Applicants List Table -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Candidate</th>
+                        <th>Applied Vacancy</th>
+                        <th>Applied On</th>
+                        <th>Current Stage</th>
+                        <th>Interview Status</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applicants %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                                    {{ app.seeker.full_name|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark">{{ app.seeker.full_name }}</div>
+                                    <div class="text-muted small">
+                                        <i class="bi bi-envelope me-1"></i>{{ app.seeker.email }}
+                                    </div>
+                                    {% if app.seeker.phone %}
+                                    <div class="text-muted extra-small" style="font-size: 11px;">
+                                        <i class="bi bi-telephone me-1"></i>{{ app.seeker.phone }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'jobs:job_detail' app.job.id %}" class="text-decoration-none fw-semibold text-dark hover-primary">
+                                {{ app.job.title }}
+                            </a>
+                            <div class="text-muted small">{{ app.job.category.name }}</div>
+                        </td>
+                        <td>
+                            <span class="small text-muted">{{ app.created_at|date:"M d, Y" }}</span>
+                        </td>
+                        <td>
+                            {% if app.current_status == 'Applied' %}
+                                <span class="badge bg-primary-subtle text-primary px-2.5 py-1">Applied</span>
+                            {% elif app.current_status == 'Under Review' %}
+                                <span class="badge bg-info-subtle text-info-emphasis px-2.5 py-1">Under Review</span>
+                            {% elif app.current_status == 'Shortlisted' %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis px-2.5 py-1"><i class="bi bi-star-fill me-1"></i>Shortlisted</span>
+                            {% elif app.current_status == 'Interview Scheduled' or app.current_status == 'Interview Completed' %}
+                                <span class="badge bg-primary text-white px-2.5 py-1">{{ app.current_status }}</span>
+                            {% elif app.current_status == 'Selected' %}
+                                <span class="badge bg-success text-white px-2.5 py-1">Selected</span>
+                            {% elif app.current_status == 'Rejected' %}
+                                <span class="badge bg-danger-subtle text-danger px-2.5 py-1">Rejected</span>
+                            {% elif app.current_status == 'Withdrawn' %}
+                                <span class="badge bg-secondary-subtle text-secondary px-2.5 py-1">Withdrawn</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if app.interview_date %}
+                                <span class="small text-primary fw-medium d-block">
+                                    <i class="bi bi-camera-video me-1"></i>{{ app.interview_date|date:"M d, h:i A" }}
+                                </span>
+                            {% else %}
+                                <span class="small text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'applications:applicant_detail' app.id %}" class="btn btn-sm btn-primary fw-semibold px-3">
+                                <i class="bi bi-pencil-square me-1"></i> Review & Update
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <div class="p-4">
+                                <i class="bi bi-people text-muted fs-1 mb-3 d-block"></i>
+                                <h5 class="fw-bold text-dark">No applicants found</h5>
+                                <p class="text-muted mb-0">No candidate submissions match your selected vacancy or stage criteria.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

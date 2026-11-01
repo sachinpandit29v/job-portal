@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Candidate Profile - Job Portal &amp; ATS{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 900px;">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+    <div>
+      <h3 class="fw-extrabold text-dark mb-0">Candidate Profile &amp; Credentials</h3>
+      <p class="text-muted small mb-0">Manage information presented to hiring teams</p>
+    </div>
+    <a href="{% url 'accounts:resume' %}" class="btn btn-outline-primary btn-sm fw-bold">
+      <i class="bi bi-file-earmark-text me-1"></i> Manage Resume Document
+    </a>
+  </div>
+
+  <div class="card p-4 border shadow-sm">
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Full Legal Name</label>
+          {{ form.full_name }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Email Address (Read-only)</label>
+          <input type="email" class="form-control" value="{{ user.email }}" disabled>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Phone Number</label>
+          {{ form.phone }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Location / Residence</label>
+          {{ form.location }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Professional Headline</label>
+        {{ form.headline }}
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Years of Experience</label>
+          {{ form.experience_years }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label small fw-semibold">Current or Previous Employer</label>
+          {{ form.current_company }}
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Education Details</label>
+        {{ form.education }}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Technical Skills</label>
+        {{ form.skills }}
+        <div class="form-text small">Enter comma-separated skills (e.g. Python, Django, SQLite, Bootstrap 5, JavaScript).</div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Professional Summary / Bio</label>
+        {{ form.bio }}
+      </div>
+
+      <h6 class="fw-bold text-dark mt-4 mb-3 border-top pt-3">Links &amp; Online Portfolios</h6>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">GitHub Profile URL</label>
+          {{ form.github_url }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">LinkedIn Profile URL</label>
+          {{ form.linkedin_url }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small fw-semibold">Portfolio Website</label>
+          {{ form.portfolio_url }}
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary fw-bold px-4">
+          <i class="bi bi-save me-1"></i> Save Changes
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}

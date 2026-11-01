@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - Job Portal &amp; ATS{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card p-4 p-md-5 border shadow-sm mx-auto" style="max-width: 480px;">
+    
+    <div class="text-center mb-4">
+      <div class="d-inline-flex p-3 rounded-circle bg-primary-custom mb-2">
+        <i class="bi bi-box-arrow-in-right fs-4"></i>
+      </div>
+      <h3 class="fw-extrabold text-dark">Sign In</h3>
+      <p class="text-muted small">Access your candidate applications or recruitment console</p>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger small p-2">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Email Address</label>
+        {{ form.email }}
+        {% if form.email.errors %}
+          <div class="text-danger small">{{ form.email.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Password</label>
+        {{ form.password }}
+        {% if form.password.errors %}
+          <div class="text-danger small">{{ form.password.errors }}</div>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 fw-bold py-2 mt-2">
+        Sign In
+      </button>
+    </form>
+
+    <div class="text-center mt-4 small text-muted">
+      Don't have an account? 
+      <a href="{% url 'accounts:register_seeker' %}" class="text-primary-custom fw-semibold text-decoration-none">Register as Seeker</a> or 
+      <a href="{% url 'accounts:register_recruiter' %}" class="text-secondary-custom fw-semibold text-decoration-none">Recruiter</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

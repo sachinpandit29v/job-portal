@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Application Tracking: {{ application.job.title }} | ATS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb mb-0">
+            {% if user.role == 'seeker' %}
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:seeker' %}" class="text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'applications:my_applications' %}" class="text-decoration-none">My Applications</a></li>
+            {% elif user.role == 'recruiter' %}
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:recruiter' %}" class="text-decoration-none">Recruiter Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'applications:recruiter_applicants' %}" class="text-decoration-none">Applicants</a></li>
+            {% else %}
+                <li class="breadcrumb-item"><a href="{% url 'dashboard:admin' %}" class="text-decoration-none">Admin Dashboard</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active" aria-current="page">Application #APP-{{ application.id|stringformat:"05d" }}</li>
+        </ol>
+    </nav>
+
+    <!-- Header Summary Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+        <div class="row align-items-center g-3">
+            <div class="col-md-8">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-4 bg-light p-3 border d-flex align-items-center justify-content-center" style="width: 64px; height: 64px;">
+                        <i class="bi bi-briefcase text-primary fs-2"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-light text-muted border">ID: #APP-{{ application.id|stringformat:"05d" }}</span>
+                            <span class="badge bg-secondary-subtle text-secondary">{{ application.job.category.name }}</span>
+                        </div>
+                        <h3 class="fw-bold text-dark mb-1">{{ application.job.title }}</h3>
+                        <p class="text-muted mb-0">
+                            <strong>{{ application.job.company.name }}</strong> • {{ application.job.location }} • Applied on {{ application.created_at|date:"F d, Y - h:i A" }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 text-md-end">
+                <div class="d-inline-block text-start text-md-end">
+                    <span class="text-muted small d-block mb-1">Current Lifecycle Stage</span>
+                    {% if application.current_status == 'Applied' %}
+                        <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-2">Applied</span>
+                    {% elif application.current_status == 'Under Review' %}
+                        <span class="badge bg-info-subtle text-info-emphasis fs-6 px-3 py-2">Under Review</span>
+                    {% elif application.current_status == 'Shortlisted' %}
+                        <span class="badge bg-warning-subtle text-warning-emphasis fs-6 px-3 py-2"><i class="bi bi-star-fill me-1"></i>Shortlisted</span>
+                    {% elif application.current_status == 'Interview Scheduled' or application.current_status == 'Interview Completed' %}
+                        <span class="badge bg-primary text-white fs-6 px-3 py-2"><i class="bi bi-camera-video me-1"></i>{{ application.current_status }}</span>
+                    {% elif application.current_status == 'Selected' %}
+                        <span class="badge bg-success text-white fs-6 px-3 py-2"><i class="bi bi-trophy-fill me-1"></i>Selected (Offer Issued)</span>
+                    {% elif application.current_status == 'Rejected' %}
+                        <span class="badge bg-danger text-white fs-6 px-3 py-2">Rejected</span>
+                    {% elif application.current_status == 'Withdrawn' %}
+                        <span class="badge bg-secondary text-white fs-6 px-3 py-2">Withdrawn</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual Tracking Progress Pipeline -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4">
+        <h5 class="fw-bold text-dark mb-4"><i class="bi bi-diagram-3 text-primary me-2"></i>Application Stage Timeline</h5>
+
+        {% if application.current_status == 'Rejected' %}
+            <div class="alert alert-danger d-flex align-items-center gap-3 rounded-4 p-3 mb-4">
+                <i class="bi bi-x-octagon-fill fs-2"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">Application Not Selected</h6>
+                    <p class="mb-0 small">Thank you for your interest. While this role will not be moving forward, the recruiter has kept your profile on file for future opportunities.</p>
+                </div>
+            </div>
+        {% elif application.current_status == 'Withdrawn' %}
+            <div class="alert alert-secondary d-flex align-items-center gap-3 rounded-4 p-3 mb-4">
+                <i class="bi bi-dash-circle-fill fs-2"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">Application Withdrawn</h6>
+                    <p class="mb-0 small">You voluntarily withdrew this application. Further recruitment stages for this listing have been discontinued.</p>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Interactive Progress Steps -->
+        <div class="tracking-timeline-container my-3">
+            <div class="row text-center g-2 position-relative">
+                {% for stage in stages %}
+                    {% with forloop.counter0 as idx %}
+                    <div class="col position-relative">
+                        <!-- Step Circle -->
+                        <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center shadow-xs mb-2 
+                            {% if current_index > idx %}bg-success text-white
+                            {% elif current_index == idx %}bg-primary text-white ring-4 ring-primary-subtle
+                            {% else %}bg-light text-muted border{% endif %}"
+                            style="width: 44px; height: 44px; font-weight: bold; font-size: 15px; transition: all 0.3s ease;">
+                            {% if current_index > idx %}
+                                <i class="bi bi-check-lg fs-5"></i>
+                            {% else %}
+                                {{ forloop.counter }}
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Step Label -->
+                        <div class="fw-bold small {% if current_index >= idx %}text-dark{% else %}text-muted{% endif %}">
+                            {{ stage.label }}
+                        </div>
+                        <div class="text-muted extra-small d-none d-md-block" style="font-size: 11px;">
+                            {{ stage.desc }}
+                        </div>
+                    </div>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Interview Scheduled Banner (if applicable) -->
+    {% if application.interview_date %}
+    <div class="card border-0 border-start border-primary border-4 shadow-sm rounded-4 p-4 mb-4 bg-primary-subtle">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <span class="badge bg-primary text-white mb-2"><i class="bi bi-calendar-event me-1"></i>Interview Confirmed</span>
+                <h5 class="fw-bold text-dark mb-1">Technical Interview Discussion</h5>
+                <p class="text-secondary mb-0">
+                    <i class="bi bi-clock me-1"></i>Scheduled for: <strong>{{ application.interview_date|date:"l, F d, Y - h:i A" }}</strong>
+                </p>
+            </div>
+            {% if application.interview_link %}
+            <div>
+                <a href="{{ application.interview_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm">
+                    <i class="bi bi-camera-video me-2"></i> Join Meeting Room
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <!-- Application Details & Candidate Submission -->
+        <div class="col-lg-7">
+            <!-- Cover letter & resume used -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-file-earmark-person text-primary me-2"></i>Submitted Materials</h5>
+                
+                <div class="mb-4">
+                    <h6 class="fw-bold text-dark small text-uppercase mb-2">Resume Document</h6>
+                    <div class="p-3 bg-light rounded-3 d-flex align-items-center justify-content-between border">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-file-earmark-pdf text-danger fs-3"></i>
+                            <div>
+                                <span class="fw-semibold text-dark d-block">{{ application.resume_filename|default:"Candidate_Resume.pdf" }}</span>
+                                <span class="text-muted small">Submitted at application initialization</span>
+                            </div>
+                        </div>
+                        {% if application.resume_file %}
+                            <a href="{{ application.resume_file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-download me-1"></i> Download
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <h6 class="fw-bold text-dark small text-uppercase mb-2">Cover Letter</h6>
+                    <div class="p-3 bg-light rounded-3 text-secondary border small lh-lg" style="white-space: pre-line;">
+                        {{ application.cover_letter|default:"No cover letter attached." }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recruiter Actions (If viewing as Recruiter) -->
+            {% if user.role == 'recruiter' and application.job.recruiter == user %}
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-light-subtle border">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-gear text-primary me-2"></i>Recruiter Action Console</h5>
+                    <a href="{% url 'applications:applicant_detail' application.id %}" class="btn btn-sm btn-primary">
+                        Open Full Candidate Review
+                    </a>
+                </div>
+                <p class="text-muted small mb-0">Advance stage, post feedback, or schedule interviews in candidate review.</p>
+            </div>
+            {% endif %}
+
+            <!-- Seeker Action (Withdraw) -->
+            {% if user.role == 'seeker' and application.current_status != 'Selected' and application.current_status != 'Rejected' and application.current_status != 'Withdrawn' %}
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center">
+                <h6 class="fw-bold text-dark mb-1">Need to withdraw this application?</h6>
+                <p class="text-muted small mb-3">If you have accepted another offer or are no longer seeking this role, you can withdraw your submission.</p>
+                <div>
+                    <a href="{% url 'applications:withdraw' application.id %}" class="btn btn-outline-danger px-4" onclick="return confirm('Confirm withdraw? This will notify the recruiter.');">
+                        <i class="bi bi-x-circle me-1"></i> Withdraw Application
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Audit History Log (Complete Application Status History) -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-journal-check text-primary me-2"></i>Status History Log
+                </h5>
+                <p class="text-muted small mb-4">Complete immutable audit trail of every status transition and remark.</p>
+
+                <div class="timeline position-relative ps-3 border-start">
+                    {% for item in history %}
+                    <div class="position-relative mb-4 ps-3">
+                        <!-- Bullet dot -->
+                        <div class="position-absolute rounded-circle bg-primary" 
+                             style="left: -22px; top: 3px; width: 12px; height: 12px; border: 2px solid white; box-shadow: 0 0 0 2px rgba(40, 75, 99, 0.4);">
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-baseline">
+                            <span class="badge bg-primary-subtle text-primary fw-semibold">{{ item.new_status }}</span>
+                            <span class="text-muted extra-small" style="font-size: 11px;">{{ item.created_at|date:"M d, Y - h:i A" }}</span>
+                        </div>
+
+                        {% if item.previous_status != item.new_status %}
+                        <div class="extra-small text-muted mt-1" style="font-size: 12px;">
+                            Changed from <span class="fst-italic">{{ item.previous_status }}</span>
+                        </div>
+                        {% endif %}
+
+                        <div class="p-2.5 bg-light rounded-3 mt-2 text-dark small border">
+                            {{ item.remarks|default:"Stage progression recorded." }}
+                        </div>
+
+                        <div class="extra-small text-muted mt-1" style="font-size: 11px;">
+                            <i class="bi bi-person-circle me-1"></i>Updated by: <strong>{{ item.changed_by.full_name|default:"System" }}</strong>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-muted small">No history logged yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
